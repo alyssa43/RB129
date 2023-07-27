@@ -1,0 +1,24 @@
+=begin
+
+PEDAC TEMPLATE
+==============
+
+P => [UNDERSTAND THE] PROBLEM:
+
+  -INPUT: 
+  -OUTPUT: 
+
+  -RULES:
+    -EXPLICIT:
+  
+    -IMPLICIT:
+        
+
+E => EXAMPLES AND TEST CASES:
+
+D => DATA STRUCTURE:
+
+A => ALGORITHM:
+    
+C => CODE WITH INTENT:
+=end
