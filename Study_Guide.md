@@ -150,6 +150,28 @@ Vehicle.wheels 		# => 2
 
 <i>For this reason, avoid using class variables when working with inheritance. If fact, some Rubyists would go as far as recommending avoiding class variables all together. The solution is usually to use class instance variables, but we will talk more about that later in the course.</i>
 
+<b>Constants:</b> Constant variables are variables that begin with an uppercase letter, although they are more commonly in all uppercase letters, and they have a lexical scope. Lexical scope means that where the constant is defined in the source code determines what it is available. They are called constants because they are a variable that should never be changed. If you do attempt to reassign a constant Ruby will warn you, but will not generate an error. When resolving a constant Ruby first searches the surrounding structure of the constant reference. If the constant is not found there, Ruby then traverses up the inheritance hierarchy of the structure that references the constant. If the constant is still not found, Ruby will then search the top level scope. EX:
+
+```ruby
+DOG_YEARS = 7
+
+class Animal; end
+class Dog < Animal
+  def initialize(age)
+    @age = age
+  end
+  
+  def age
+    DOG_YEARS * @age
+  end
+end
+
+sparky = Dog.new(4)
+puts sparky.age # => 28
+```
+
+In the above example, when ruby tries to resolve the constant reference on line 11 within the `age` instance method definition, it first searches within the `Dog` class, which remains unresolved because it is not found there. It then searches up the inheritance chain which would be the classes: `Animal`, `Object`, `Kernel`, `BasicObject`, none of which are able to resolve the constant because it is not found within those classes. Finally, it searches the top level (outer most scope of our program); which is where it is finally found and able to be resolved.
+
 <h2>Getter & Setter Methods</h2>
 
 Getter and setter metohds give us a way to expose and change an object's state. We can also use these methods from within the class as well. Accessor methods within a class allow us to retrieve (getter) and/or change (setter) an instance variable for an object. Without getter and setter methods, if we tried to retrieve or change an instance variable we would receive a `NoMethodError` exception. EX:
@@ -323,7 +345,13 @@ A common use of using `super` would be with the `initialize` method.
 
 <i>Note: when `super` is used and arguments are required, it adds a twist to how `super` is invoked. When invoked with no arguments, `super` automatically forwards the arguments that were passed to the method from which `super` is called. If the current method accepts arguments, but the `super` method does not, you must invoke `super` specifically with no arguments: `super()`. If the arguments for the `super` method invocation are different from the current method's arguments, you must specific that as well.</i>
 
-One of the limitations of class inheritance in Ruby is that a class can only directly sub-class from one superclass. We call this <b>single inheritance</b>. When we want to allow classes to inherit from multiple classes, a funtionality known as multiple inheritance, the answer is to mix in behaviors with modules. A class can only sub-class from one parent, but it can mix in as many modules as it likes. However, it is important to remember that mixing in modules does affect the method lookup path.
+One of the limitations of class inheritance in Ruby is that a class can only directly sub-class from one superclass. We call this <b>single inheritance</b>. When we want to allow classes to inherit from multiple classes, a funtionality known as multiple inheritance, the answer is to mix in behaviors with modules. A class can only sub-class from one parent, but it can mix in as many modules (interface inheritance) as it likes. However, it is important to remember that mixing in modules does affect the method lookup path.
+
+A couple things to consider when evaluating whether to use class inheritance vs interface inheritance are:
+
+* As stated above, a class can only subclass (class inheritance) from one class. You can mix in as many modules (interface inheritance) as you'd like.
+* If there's an "is-a" relationship, class inheritance is usually the correct choice. If there's a "has-a" relationship, interface inheritance is generally a better choice. For example, a dog "is an" animal and it "has an" ability to swim.
+* You cannot instantiate modules. In other words, objects cannot be created from modules.
 
 <h2>Encapsulation</h2>
 
@@ -397,6 +425,8 @@ puts Fish.new.swim # => I'm swimming
 puts Cat.new.swim  # => NoMethodError
 ```
 
+Mixing in modules to a class is sometimes known as <b>interface inheritance</b>. The class doesn't inherit from another class, but instead inherits the interface provided by the mixin module.
+
 A common naming convention for naming modules in Ruby is to use the "able" suffix on whatever verb describes the behavior that the module is modeling.
 
 Another concept related to modules is <b>namespacing</b>. Namespacing is when we organize smiliar classes under a module. In other words, we can use modules to group related classes together. Some advantages of namespacing are that it makes it easy to recognize related classes in our code as well as it reduces the likelihood of our classes colliding with other similarly named classes in our codebase. EX:
@@ -415,6 +445,8 @@ module Animal
     end
   end
 end
+
+# we call classes in a module by appending the class name to the module name with two colons (::) (method/constant resolution operator)
 
 buddy = Animal::Dog.new
 kitty = Animal::Cat.new
@@ -491,7 +523,7 @@ We can see by this example, that the order in which we `include` modules within 
 
 <h2>Method Overriding</h2>
 
-Because of the way Ruby's method lookup path searches when resolving a method invocation; we are given the ability to override methods in other classes. One example of this is when working with sub-classes and superclasses. If you have a sub-class that inherits a `move` method from it's parent, but you do not want to yse that inherited `move` method; you can write your own `move` method from within the sub-class. EX:
+Because of the way Ruby's method lookup path searches when resolving a method invocation; we are given the ability to override methods in other classes. One example of this is when working with sub-classes and superclasses. If you have a sub-class that inherits a `move` method from it's parent, but you do not want to use that inherited `move` method; you can write your own `move` method from within the sub-class. EX:
 
 ```ruby
 class Animal # superclass
@@ -513,7 +545,7 @@ puts Cat.new.move  # => I can move
 puts Fish.new.move # => I can swim
 ```
 
-Because every class you create inherently subclasses from the `Object` class, and the `Object` class is built into Ruby and comes with many critical methods, it's possible to accidentally override important methods that you may need and do not intend to override. For example, `send` is an instance method that all classes inherit from `Object`. If you defined a new `send` instance method in your class, all objects of your class will call your custom `send` method, instead of the one in class `Object`, which is probably the one they mean to call. (`Object#send` serves as a way to call a methodby passing it a symbol or a string which represents the method you want to call.) EX:
+Because every class you create inherently subclasses from the `Object` class, and the `Object` class is built into Ruby and comes with many critical methods, it's possible to accidentally override important methods that you may need and do not intend to override. For example, `send` is an instance method that all classes inherit from `Object`. If you defined a new `send` instance method in your class, all objects of your class will call your custom `send` method, instead of the one in class `Object`, which is probably the one they mean to call. (`Object#send` serves as a way to call a method by passing it a symbol or a string which represents the method you want to call.) EX:
 
 ```ruby
 class Parent
@@ -536,11 +568,55 @@ Parent.new.send :say_hi # => "Hi from Parent"
 Child.new.send :say_hi # => wrong number of arguments (given 1, expected 0) (ArgumentError)
 ```
 
+Although, accidently overriding built-in methods is important to keep in mind; we can also use this to our advantage by purposely overriding built-in methods. One very common method which is frequently overriden on purpose is the `#to_s` method. This is useful to us when we want to have a specific output when invoking `#puts` on an object that is an instance of one of our classes. Calling `#puts` automatically calls `#to_s` on it's argument. EX:
 
+```ruby
+class Dog
+  def initialize(name)
+    @name = name
+  end
+end
+
+sparky = Dog.new('Sparky')
+puts sparky # => #<Dog:0x000000010a09f9b0>
+```
+
+Here when we invoke `#puts` on our `sparky` object we see an output of a string representation of our object. If we wanted to be able to see a specific output when invoking `#puts` on an object of our class we can override the `#to_s` method by defining our own `to_s` instance method within our class. EX:
+
+```ruby
+class Dog
+  def initialize(name)
+    @name = name
+  end
+  
+  def to_s
+    "This dog's name is #{@name}"
+  end
+end
+
+sparky = Dog.new('Sparky')
+puts sparky # => This dog's name is Sparky
+```
+
+When overriding `#to_s` within a custom class, you <b>must</b> remember that Ruby expects `#to_s` to always return a string. If your custom `#to_s` method does not return a string, it will not work as expected in places where `#to_s` is implicitly invoked like `#puts` and string interpolation. Instead of printing (or inserting) the value returned by `#to_s`, Ruby will ignore the non-string value and look in the inheritance chain for another version of the `#to_s` that does return a string. In most cases, it will use the value returned by `Object#to_s` instead. EX:
+
+```ruby
+class Foo
+  def to_s
+    42
+  end
+end
+
+foo = Foo.new
+puts foo							# => #<Foo:0x000000010335fa08>
+puts "foo is #{foo}"	# => foo is #<Foo:0x000000010335fa08>
+```
+
+Other custom methods to be overridden within custom classes as those within the "fake operator" group (see below). 
 
 <h2>self</h2>
 
-When `self` is referenced inside a class but outside of an instance method, it refers to the class itself:
+`self` can refer to different things depends on where it is used. When `self` is referenced inside a class but outside of an instance method, it refers to the class itself:
 
 ```ruby
 class GoodDog
@@ -553,7 +629,7 @@ Therefore, a method definition prefixed with `self` is the same as defining the 
 ```ruby
 class GoodDog
   def self.a_method
-    # this is equivalent to...
+    # this is equivalent to ...
   end
   
   def GoodDog.a_method
@@ -584,12 +660,11 @@ class GoodDog
   attr_accessor :name
   
   def initialize(name)
-    self.name = name
+    self.name = name # In this example self refers to the object sparky
   end
 end
 
 sparky = GoodDog.new('Sparky')
-sparky.name 
 ```
 
 In this example, `self.name =` acts the same as calling `sparky.name =` from outside of the class (but since we can't call `sparky.name = ` from inside the class because of scope). This is why using `self` to call instance methods from within the class works the way it does. 
