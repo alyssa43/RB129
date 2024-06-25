@@ -250,7 +250,23 @@ puts sparky.name # => Fido
 
 <h2>Instance Methods vs. Class Methods</h2>
 
-<b>Instance Methods:</b> We are able to give our classes <i>behaviors</i> with instance methods. All objects of the same class have the same behaviors (though they contains different <i>states</i> (i.e., instance variables)).
+<b>Instance Methods:</b> We are able to give our classes <i>behaviors</i> with instance methods. All objects of the same class have the same behaviors (though they contain different <i>states</i> (i.e., instance variables)).
+
+```ruby
+class Person
+  def initialize(name)
+    @name = name
+  end
+  
+  def speak
+    "Hello, my name is #{@name}"
+  end
+end
+
+puts Person.new('Alyssa').speak #=> Hello, my name is Alyssa
+```
+
+In this example we have an instance method called `speak`. All `Person` objects will have the ability to `speak` because this instance method gives the `Person` class that behavior. 
 
 <b>Class Methods:</b> Class methods are methods we can call directly on the class itself, without having to instantiate any objects. When defining a class method, we prepend the method name with the reserved word `self.`like this:
 
@@ -276,6 +292,62 @@ Person.total_people # => 0
 Class methods are where we put functionality that does not pertain to individual objects. Objects contain state, and if we have a method that does not need to deal with states, then we can just use a class method, like this example.
 
 <h2>Method Access Control</h2>
+
+Access control is a concept that exits in a number of programming languages, including Ruby. It is generally implemented through the use of <i>access modifiers</i>. The purpose of access modifiers is to allow or restrict access to a particular thing. In Ruby, the things that we are concerned with restricting access to are the methods defined in a class. In a Ruby context, therefore, you'll commonly see this concept referred to as <b>method access control</b>. 
+
+The way that Method Access Control is implemented in Ruby is through the use of the `public`, `private`, and `protected` access modifiers. A `public` method is a method that is available to anyone who knows either the class name or the object's name. These methods are readily available for the rest of the program to use and comprise the class's <I>interface</I> (that's how other classes and objects will interact with this class and its objects).
+
+Sometimes you'll have methods that are doing work in the class but don't need to be available to the rest of the program. These methods can be defined as `private`. `private` methods are only accessible from other methods in the class. In other words, `private` methods are not accessible outside of the class definition at all, and are only accessible from inside the class when called without `self`.
+
+<I>Note: As of Ruby 2.7, it is now legal to call private methods with a literal `self` as the caller. Note that this does <b>not</b> mean that we can call a private method with any other object, not even one of the same type. We can only call a private method with the current object</I>.
+
+`public` and `private` methods are most common, but in some less common situations, we'll want an in-between approach. For this, we can use the `protected` method to create protected methods. Protected methods are similar to private methods in that they cannot be invoked outside the class. The main difference between them is that protected methods allow access between class instances, while `private` methods do not. EX:
+
+```ruby
+class Person
+  def initialize(name, age, dob)
+    @name = name
+    @age = age
+    @dob = dob
+  end
+
+  def older?(other_person)	# public method
+    age > other_person.age  # calling protected method for `self` and `other_person`
+  end
+  
+   def born_first?(other_person) # public method
+    dob[2] < other_person.dob[2] # calling private method for `self` and `other_person`
+  end
+
+  def public_disclosure	# public method
+    "#{@name} was born in #{dob[2]}" # calling private method
+  end
+
+  protected
+
+  attr_reader :age	# protected method
+
+  private 
+
+  attr_reader :dob	# private method
+end
+
+alyssa = Person.new('Alyssa', 34, [7, 14, 1989])
+rich = Person.new('Rich', 36, [3, 14, 1988])
+
+alyssa.older?(rich) # => false => calling public method that calls protected method
+rich.older?(alyssa) # => true
+
+alyssa.age # => NoMethodError: protected method `age` called for #<Person:0x000000010108b0b8 @name="Alyssa", @age=34>
+
+alyssa.public_disclosure # => "Alyssa was born in 1989" => calling public method that calls private method
+
+alyssa.dob # => NoMethodError: private method `dob' called for #<Person:0x000000010621a938 @name="Alyssa", @age=34, @dob=[7, 14, 1989]>
+
+alyssa.born_first?(rich) # => NoMethodError: private method `dob' called for #<Person:0x000000010539a7a0 @name="Rich", @age=36, @dob=[3, 14, 1988]>
+```
+
+In the above example, we can see that Ruby allows us to call `protected` and `private` methods on the current object from within a public method inside of a custom class, however if we try to call those `protected` and `private` methods from outside of the class we see a `NoMethodError` exception. We can also see that when we call a `protected` method not just on the current object, but on an instance of the same class, we are able to access that method; as in the `born_first?` Instance method definition. However, if we try to access a `private` method on another instance of the same class, like in the `born_first?` instance method, we are unable to access that information and instead see a `NoMethodError` exception.
 
 <h2>Class Inheritance</h2>
 
@@ -395,7 +467,53 @@ puts Cat.new.move  # => I can move
 puts Fish.new.move # => I can move
 ```
 
-Duck typing
+In addition to using class inheritance (and mixing modules) to implement polymorphism, we can also achieve polymorphism through <b>duck typing</b>. Duck typing occurs when objects of different <u>unrelated</u> types both respond to the same method name. With duck typing, we aren't concerned with the class or type of an object, but we do care whether an object has a particular behavior. If an object quacks like a duck, then we can treat it as a duck. Specifically, duck typing is a type of polymorphism as long as the objects involved use the same method name and take the same number of arguments, we can treat the object as belonging to a specific category of objects. EX:
+
+```ruby
+class Wedding
+  attr_reader :guests, :flowers, :songs
+  
+  def prepare(preparers)
+    preparers.each do |preparer|
+      preparer.prepar_wedding(self)
+    end
+  end
+end
+
+class Chef
+  def prepare_wedding(wedding)
+    prepare_food(wedding.guests)
+  end
+  
+  def prepare_food(guests)
+    #implementation
+  end
+end
+
+class Decorator
+  def prepare_wedding(wedding)
+    decorate_place(wedding_flowers)
+  end
+  
+  def decorate_place(flowers)
+    #implementation
+  end
+end
+
+class Musician
+  def prepare_wedding(wedding)
+    prepare_performance(wedding.songs)
+  end
+  
+  def prepare_performance(songs)
+    #implementation
+  end
+end
+```
+
+Though there is no inheritance in the above example, each of the preparer-type classes provides a `prepare_wedding` method. We still have polymorphism since all of the objects respond to the `prepare_wedding` method call. If we later need to add another preparer type, we can create another class an implement the `prepare_wedding` method to perform the appropriate actions.
+
+<I>Note that merely having two different objects that have a method with the same name and compatible arguments doesn't mean that you have polymorphism. In theory, those methods might be used polymorphically, but that doesn't always make sense. Unless you're actually calling the method in a polymorphic manner, you don't have polymorphism.</I>
 
 <h2>Modules</h2>
 
@@ -672,3 +790,34 @@ In this example, `self.name =` acts the same as calling `sparky.name =` from out
 <h2>Fake Operators and Equality</h2>
 
 <h2>Collaborator Objects</h2>
+
+Collaboration is a way of modeling relationships between different objects. There are a number of different types of relationships discussed with regard to OOP. When referring to a collaborative relationship, it is one of association, which can be thought of as a "has-a" relationship. For example, a library has books, so there is an associative relationship between objects of class Library and objects of class Book. <I>A collaborative relationship is a relationship of association - NOT inheritance.</I> 
+
+Because an object's state is saved in an object's instance variables, and because instance variables can hold any object; we can set an object's instance variable to reference an object of a custom class that we've created. EX:
+
+```ruby
+class Bulldog; end
+
+class Person
+  attr_accessor :name, :pet
+  
+  def initialize(name)
+    @name = name
+  end
+end
+
+bob = Person.new('Robert')
+bud = Bulldog.new
+bob.pet = bud
+bob.pet # => #<Bulldog:0x000000010373ac90>
+bob.pet.class # => Bulldog
+bob.pet.speak # => "Bark!"
+```
+
+Here we have set `bob`'s `@pet` instance variable to `bud`, which is a `Bulldog` object. This means that when we call `bob.pet`, it is returning a `Bulldog` object. Because `bob.pet` returns a `Bulldog` object, we can chain any `Bulldog` methods at the end as well. 
+
+Objects that are stored as state within another object are called "collaborator objects". We call such objects collaborators because they work in conjunction (or in collaboration) with the class they are associated with. 
+
+In the above example, `bob` has a collaborator object stored in the `@pet` variable.
+
+When working with collaborator objects in your class, you may be working with strings, integers, arrays, hashes, or even custom objects. Collaborator objects allow you to chop up and modularize the problem down into cohesive pieces; they are at the core of OO programming and play an important role in modeling complicated problem domains.
