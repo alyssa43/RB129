@@ -4,9 +4,22 @@
 
 2. <b>What is encapsulation?</b> Encapsulation is a form of data protection where data (state) and functionality (behavior) are combined into a single unit called an "object". By containing both state and behavior within itself, encapsulation allows us to pass objects around in our program. We can choose to hide certain data or expose it as needed, which helps in organizing and protecting the inner working of our code.
 
-3. <b>How does encapsulation relate to the public interface of a class?</b> Because encapsulation bundles data and functionality together into an object, it allows us to hide this data and functionality from the rest of our code. Meaning that we can define our classes in such a way that an object
+3. <b>How does encapsulation relate to the public interface of a class?</b> Because encapsulation bundles data and functionality together into a singular object, it allows us to hide this data and functionality from the rest of our code. The way in which we define a class' attributes and methods determines whether those attributes and methods are accessible to objects instantiated from that class outside of the class. For instance, if we define a public instance method within a class, any objects instantiated from that class can access that method from outside of the class. The public interface of a class acts as a layer of abstraction that allows objects of that class to interact with it's public attributes and methods without needing to be aware of the internal details.
 
-4. What is an object?
+4. What is an object? An object can be thought of as an individual and unique container that holds information. The information an object contains will be determined by the class it was created from. Even when multiple objects are created from one class, they will still be their own unique object. EX:
+
+   ```ruby
+   class Person
+     def initialize(name)
+       @name = name
+     end
+   end
+   
+   bob = Person.new('Robert')
+   joe = Person.new('Joesph')
+   ```
+
+   In this example we have instantiated two new `Person` objects, `bob` and `Joe`, both of with have their own unique attributes.
 
 5. What is a class?
 
