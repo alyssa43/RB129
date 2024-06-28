@@ -184,7 +184,7 @@
 
 26. <b>What is a collaborator object, and what is the purpose of using collaborator objects in OOP?</b> 
 
-    A collaborator object is an object that is stored within another object's state (instance variables). The purpose of using collaborator objects is to enable objects to interact and collaborate with other objects in our program. EX:
+    A collaborator object is any object that is being held within the state (instance variable) of another object. The purpose of using collaborator objects is to enable objects to interact and collaborate with other objects in our program. EX:
 
     ```ruby
     class Person
@@ -203,7 +203,7 @@
     p alyssa.name.object_id # => 60
     ```
 
-    In the above code, the collaborator object is the String object `"Alyssa"`, which is stored within the local variable `my_name` . This String ojbect is passed as an arugment to the `Person.new` method invocation, which calls the `Person#initialize` constructor method. Inside this method, the `@name` instance variable is assigned to reference the same String object `"Alyssa`". By invoking the `object_id` method on both `my_name` and `alyssa.name` (which returns the value stored within the `@name` instance variable), we can see that both variables reference the same String object. In this example the collaborator object is just a simple String object; however, collaborator objects can be of any type, such as other custom objects. Using collaborator objects allows objects to work together with other objects, which helps to keep code organized and easier to maintain.
+    In the above code, the collaborator object is the String object `"Alyssa"`, which is stored within the local variable `my_name` . This String object is passed as an argument to the `Person.new` method invocation, which calls the `Person#initialize` constructor method. Inside this method, the `@name` instance variable is assigned to reference the same String object `"Alyssa`". By invoking the `object_id` method on both `my_name` and `alyssa.name` (which returns the value stored within the `@name` instance variable), we can see that both variables reference the same String object. In this example the collaborator object is just a simple String object; however, collaborator objects can be of any type, such as other custom objects. Using collaborator objects allows objects to work together with other objects, which helps to keep code organized and easier to maintain.
 
 27. <b>What is an accessor method?</b> 
 
@@ -241,7 +241,7 @@
     bob.info # => "Hello, I am Robert and my birthday is 1/2/2000"
     ```
 
-    However, if we re-write the `Person#info` method to reference the `@info` instance variable instead of the getter method, this is the output we will see:
+    However, if we re-write the `Person#info` method to reference the `@dob` instance variable instead of the getter method, this is the output we will see:
 
     ```ruby
     class Person
@@ -297,7 +297,19 @@
     puts sparky.info # => Sparky weighs 10 lbs and is 12 inches tall.
     ```
 
+    The `change_info` method is not working as expected because instead of invoking the setter methods `name=`, `height=`, and `weight=` Ruby thinks we are just creating new local variables. To tell Ruby that we are wishing to invoke the setter methods, we need to prefix each with `self`, like so:
+
+    ```ruby
+    def change_info(n, h, w)
+      self.name = n
+      self.height = h
+      self.weight = w
+    end
+    ```
+
 33. When would you call a method with self?
+
+    You would call a method with `self` when invoking a class method.
 
 34. What are class methods?
 
@@ -317,7 +329,15 @@
 
 42. <b>Why use `self`, and how does `self` change depending on the scope it is used in?</b>
 
+    Because `self` refers to the current object, what `self` references depends on the scope in which it is used. 
+
+    When `self` is scoped at the class level, meaning it is used inside of a class but outside any instance methods, it references that class. This is why, to define a class method, we prefix the method name with `self`, so that Ruby knows the class itself will be invoking this method and not an object instantiated from the class. 
+
+    When `self` is scoped at the object level, meaning it used inside an instance method within a class, it references the calling object. Using `self` within an instance method is useful when we want to invoke a setter method instead of directly accessing the instance variable. To let Ruby know that we want to invoke a setter method and not just create a new local variable, we must prefix the method invocation with `self`. 
+
 43. What is inheritance, and why do we use it?
+
+    Inheritance is how a class has the ability to inherit behaviors (instance methods) from another class.  
 
 44. Give an example of how to use class inheritance.
 
