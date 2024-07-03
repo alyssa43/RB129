@@ -66,6 +66,8 @@
 
 9. How does polymorphism work in relation to the public interface?
 
+   Generally speaking, to use a classes instance method in a polymorphic manner, that instance method will need to be `public`. Meaning that it is available to be invoked on an instance of that class outside of the class. If a classes instance method is `private`, you will not be able to invoke that method from outside of the class which limits how to use it in a polymorphic manner. However, if you implement a `public` instance method within a class that invokes a `private` or `protected` instance method you can still achieve polymorphism. The key is there needs to be at least one `public` method available to an object to achieve polymorphism.
+
 10. <b>What is duck typing? How does it relate to polymorphism - what problem does is solve?</b> 
 
     Duck typing is a way to achieve polymorphism. It occurs when objects of different types invoke a method of the same name, and with the same number of arguments. These objects can be treated as belonging to a specific category of objects - "if it quacks like a duck it can be treated as a duck".
@@ -110,13 +112,23 @@
 
 11. What is inheritance?
 
+    Inheritance in OOP and Ruby is a mechanism where a class inherits behaviors and attributes from another class. The class that passes on its behaviors is called the 'superclass', and the class that inherits those behaviors is called the 'subclass'. When defining a class to subclass another class, the subclass will have access to all of the `public` and `protected` methods and attributes of the superclass. This creates a hierarchical relationship between classes, where the subclass can also have additional behaviors and attributes or override existing ones from the superclass. A class can only subclass from one superclass.
+
 12. What is the difference between a superclass and a subclass?
+
+    A "superclass" passes all of its public and protected functionality onto the "subclass". The subclass will be able to reference any of that information as needed. Whereas, the superclass does not have access to any of the functionality within the subclass. 
 
 13. What is a module?
 
+    A module is a set of behaviors and/or data that is grouped together and can be included into classes through "mixing in". Modules allow for the sharing of reusable code across multiple classes without using class inheritance. By using modules, also known as "interface inheritance", it keeps our code DRY. To mix a module into a class we use the `include` method invocation, and pass it the name of the module you wish to mix in as the argument.
+
 14. What is a mixin?
 
+    A mixin is when you invoke the `include` method and pass in a module as the argument, within a class. This allows the class to access any data and/or behaviors defined within that module.
+
 15. When is it good to use inheritance?
+
+    It is good to use inheritance when there is a hierarchical relationship between classes, or in other words, when classes have an "is-a" relationship. For example, if we have the classes `Animal` and `Dog`, we can say that a `Dog` "is-an" `Animal`. This means it makes sense for our `Dog` class to inherit from the `Animal` class. However, if we have two unrelated classes, like `Car` and `Fish`, there is no shared hierarchy, so inheritance would not be appropriate for these two classes.
 
 16. <b>In inheritance, when would it be good to override a method?</b> 
 
@@ -164,7 +176,23 @@
 
 18. <b>When defining a class, we usually focus on state and behaviors. What is the difference between these two concepts?</b> 
 
-    An object encapsulates its state within itself by the use of instance variables. The state of an object refers to the collection of that object's instance variables. When defining a class, we will want to create instance variables to hold the important data that an object of that class should have. Whereas, the behavior of an object is determined by the methods available to that object. By defining instance methods within our class, we enable specific behaviors for objects instantiated from that class. For example, if we define a `Dog` class and within that class, we define a `speak` instance method, we have given any object instantiated from the `Dog` class the ability to `speak` - this is considered the `Dog`'s behavior.
+    When defining a class, we may have important data that we want an object of the class to hold. This data represents the object's state. The state of an object is the collection of its instance variables. The behavior of an object, on the other hand, is determined by the methods available to that object. By defining instance methods within our class, we enable specific behaviors for instances of that class. For example:
+
+    ```ruby
+    class Dog
+      attr_reader :name
+      
+      def initialize(name)
+        @name = name
+      end
+      
+      def speak
+        "Ruff!"
+      end
+    end
+    ```
+
+    In the code above, we define a `Dog` class that has an instance variable called `@name` and an instance method called `speak`. This means any object instantiated from the `Dog` class will have its own unique state (the value referenced by `@name`) and the ability to `speak` (behavior). 
 
 19. How do you initialize a new object?
 
@@ -308,8 +336,6 @@
     ```
 
 33. When would you call a method with self?
-
-    You would call a method with `self` when invoking a class method.
 
 34. What are class methods?
 
