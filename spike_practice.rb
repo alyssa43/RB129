@@ -1,115 +1,48 @@
 =begin
-+ There's a dental office called Dental People Inc.  
-+ Within this office, there's 2 oral surgeons, 2 orthodontists, 1 general dentist.
-+ Both general dentists and oral surgeons can pull teeth. 
-+ Orthodontists cannot pull teeth.  
-+ Orthodontists straighten teeth.
-+ All of these aforementioned specialties are dentists. 
-+ All dentists graduated from dental school.  
-+ Oral surgeons place implants.
-+ General dentists fill teeth
+Scenario 1: Restaurant Management System
+Requirements:
+There are Chefs, Waiters, Customers, and a Manager.
+All staff members (chefs, waiters, and managers) have names and employee IDs.
+Chefs can cook dishes.
+Waiters can take orders and serve food.
+Customers can place orders and eat food.
+The manager can manage the restaurant and check on staff.
+All staff members can receive their salary.
 
-+ * Dental Office
-  + - named Dental People Inc
+Scenario 2: University System
+Requirements:
+There are Professors, Students, Courses, and an Administrator.
+Professors have a name, an employee ID, and can teach courses.
+Students have a name, a student ID, and can enroll in courses.
+Courses have a title, a course code, and a list of enrolled students.
+The administrator can add courses, assign professors to courses, and enroll students in courses.
+Students can attend courses and take exams.
 
-  + - 2 oral surgeons
+Scenario 3: Banking System
+Requirements:
+There are Customers, Accounts (Checking, Savings), and BankEmployees (Tellers, Managers).
+Customers have a name, customer ID, and can own accounts.
+Accounts have a balance and can be deposited into and withdrawn from.
+Bank employees have a name, employee ID, and can perform transactions on accounts.
+Tellers can deposit into and withdraw from accounts.
+Managers can approve loans and view all transactions.
+Customers can view their account balance.
 
-  + - 2 orthodontists
+Scenario 4: E-learning Platform
+Requirements:
+There are Instructors, Students, Courses, and a PlatformAdministrator.
+Instructors have a name, an employee ID, and can create courses.
+Students have a name, a student ID, and can enroll in courses.
+Courses have a title, course content, and a list of enrolled students.
+The platform administrator can add courses, assign instructors to courses, and enroll students in courses.
+Students can complete assignments and receive grades.
 
-  + - 1 general dentist
-
-+ * Dentist
-  + - graduated from dental school
-
-+ * Oral surgeon (speciality of dentist)
-  + - can pull teeth
-  + - place implants
-
-+ * Orthodontist (speciality of dentist)
-  + - can straighten teeth
-
-+ * General Dentist (speciality of dentist)
-  + - can pull teeth
-  + - fill teeth
+Scenario 5: Social Media Platform
+Requirements:
+There are Users, Posts, Comments, and an Admin.
+Users can create posts and comment on posts.
+Posts have a title, content, and a list of comments.
+Comments have content and are associated with a user and a post.
+The admin can manage users and moderate posts and comments.
+Users can like posts and comments.
 =end
-
-module Pullable
-  def pull_teeth
-    "I can pull teeth"
-  end
-end
-
-class Dentist
-  def graduated
-    "I graduated from Dental School"
-  end
-end
-
-class OralSurgeon < Dentist
-  include Pullable
-
-  def place_implants
-    "I can place dental implants"
-  end
-end
-
-class Orthodontist < Dentist
-  def straighten_teeth
-    "I can straighten teeth"
-  end
-end
-
-class GeneralDentist < Dentist
-  include Pullable
-
-  def fill_teeth
-    "I can fill teeth"
-  end
-end
-
-class DentalOffice
-  attr_reader :oral_surgeons, :orthodontists, :general_dentists
-
-  def initialize
-    @oral_surgeons = []
-    @orthodontists = []
-    @general_dentists = []
-  end
-
-  def add_oral_surgeon(oral_surgeon)
-    @oral_surgeons << oral_surgeon
-  end
-
-  def add_orthodontist(orthodontist)
-    @orthodontists << orthodontist
-  end
-
-  def add_general_dentist(general_dentist)
-    @general_dentists << general_dentist
-  end
-end
-
-dental_people_inc = DentalOffice.new
-
-oral_surg1 = OralSurgeon.new
-oral_surg2 = OralSurgeon.new
-
-ortho1 = Orthodontist.new
-ortho2 = Orthodontist.new
-
-general_dent = GeneralDentist.new
-
-dental_people_inc.add_oral_surgeon(oral_surg1)
-dental_people_inc.add_oral_surgeon(oral_surg2)
-dental_people_inc.add_orthodontist(ortho1)
-dental_people_inc.add_orthodontist(ortho2)
-dental_people_inc.add_general_dentist(general_dent)
-
-p dental_people_inc.oral_surgeons
-p dental_people_inc.orthodontists
-p dental_people_inc.general_dentists
-
-
-
-
-
