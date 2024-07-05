@@ -15,7 +15,9 @@
    p bob.name
    ```
 
-   Answer: `nil` will be output. This happens because on line 9 we assign a local variable called `bob` to reference a new instance of the class `Person`. When we instantiate a new `Person` class object, there is an instance variable called `@name`, but at no point does a value get assigned to that instance variable, which leaves it uninitialized which defaults to have a value of `nil`. Then, on line 10 our local variable `bob` , which references an instance of our `Person` class, calls the getter method `Person#name` which will return the value referenced by the `@name` instance variable; `nil`. It is then returned and output by the `p` method invocation. 
+   Answer: The output will be `nil`. This is because we have created a new instance of the `Person` class without assigning a value to the `@name` instance variable. By default, uninitialized instance variables have a value of `nil`. So, when we invoke the `Person#name` getter method on our `Person` object `bob`, Ruby will , Ruby will return the value referenced by the `@name` instance variable, which then gets output and returned by the `p` method invocation. 
+
+   `nil` will be output. This happens because on line 9 we initialize a local variable called `bob` and assign it to reference a new instance of the `Person` class. When we instantiate a new `Person` object, there is an instance variable called `@name`, but at no point does a value get assigned to that instance variable, which leaves it uninitialized which defaults to have a value of `nil`. Then, on line 10 our local variable `bob` , which references an instance of our `Person` class, calls the getter method `Person#name` which will return the value referenced by the `@name` instance variable; `nil`. It is then returned and output by the `p` method invocation. 
 
    This demostrates how instance variables differ from local variables because an uninitialized instance variable will default to a value of `nil`, while an uninitialized local variable will throw a `NameError` exception because Ruby cannot find a local variable that hasn't been initiailzed.
 
