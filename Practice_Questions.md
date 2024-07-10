@@ -6,7 +6,7 @@
 
 2. <b>What is encapsulation?</b> 
 
-   Encapsulation is a form of data protection where data (state) and functionality (behavior) are combined into a single unit called an "object". By containing an object's state and behavior within itself, encapsulation then allows us to pass these objects around in our program. We can choose to hide certain data or expose it as needed, which helps in organizing and protecting the inner workings of our code.
+   Encapsulation is a form of data protection where data (state) and functionality (behavior) are combined into a single unit called an "object". By containing an object's state and behavior within itself, we can then pass these objects around in our program to use as needed. We can also choose to hide certain data, or expose it as needed, which helps in orgnizing and protecting the inner workings of our code.
 
 3. <b>How does encapsulation relate to the public interface of a class?</b> 
 
@@ -196,11 +196,31 @@
 
 19. How do you initialize a new object?
 
+    To initialize a new object you must invoke the `#new` method on the class name that you wish to instantiate from, and if applicable pass any arguments required. To see if a class requires arguments upon instantiation you can look within the class at the constructor method, which is the `#initialize` instance method. When `#new` is invoked, Ruby is triggered to invoke that classes `#initialize` method. EX:
+
+    ```ruby
+    class Person
+      def initialize(name)
+        @name = name
+      end
+    end
+    
+    bob = Person.new('Robert')
+    ```
+
+    In the above example we have created a new `Person` object by invoking the `#new` method on the class `Person` which takes the String `'Robert'` as an argument. Because the `Person#new` method invocation invokes the `Person#initialize` method, the String `'Robert'` is what is being passed into the `Person#initialize` method, which then assigns the `@name` instance variable to reference the String `'Robert'`. A new local variable called `bob` is then assigned to reference this new `Person` object.
+
 20. What is a constructor method?
+
+    A constructor method is a method that is invoked when an object is being instantiated or created. In Ruby, we have the `#initialize` method that we use as the constructor method.
 
 21. What is an instance variable, and how is it related to an object?
 
+    An instance variable is a variable that holds a value specifically correlated to an indivdual object. It begins with the `@` symbol and  is scoped at the object level. Because it is scoped at the object level, that means that each individual object will have their own unique set of instance variables. We refer to an objects collection of instance variables as that object's state. 
+
 22. What is an instance method?
+
+    An instance method is a method that is defined within a class and is available to be invoked by objects of that same class. To define an instance method, you use the `def` keyword followed by the method name, all of which goes within the class definition.
 
 23. <b>How do objects encapsulate state?</b> 
 
@@ -208,11 +228,15 @@
 
 24. What is the difference between classes and objects?
 
+    Objects are created from classes. When an object is instantiated it uses the code within the classes definition to determine that object's behaviors and it's individual specific state.
+
 25. How can we expose information about the state of the object using instance methods?
+
+    To expose the data being held within an object's state, we can use accessor methods. There are two types of accessor methods, getter methods and setter methods. A getter method is an instance method that typically returns the value of an instance variable. A setter method is an instance method that allows you to modify the value of an instance variable. You can create your own accessor methods by defining them within the class definition, or Ruby has a shortcut by using `attr_reader` for getter methods, `attr_writer` for setter methods, or `attr_accessor` for both a getter and a setter method.
 
 26. <b>What is a collaborator object, and what is the purpose of using collaborator objects in OOP?</b> 
 
-    A collaborator object is any object that is being held within the state (instance variable) of another object. The purpose of using collaborator objects is to enable objects to interact and collaborate with other objects in our program. EX:
+    A collaborator object is an object that is being held within the state (instance variable) of another object. The purpose of using collaborator objects is to enable objects to interact and collaborate with other objects in our program. EX:
 
     ```ruby
     class Person
@@ -237,15 +261,35 @@
 
     An accessor method is an instance method within a class that allows access to an instance variable within that class. It is used to retrieve or modify the data referenced by the instance variable.
 
+    There are two types of accessor methods, getter methods and setter methods. A getter method is an instance method that typically returns the value of an instance variable. A setter method is an instance method that allows you to modify the value of an instance variable. You can create your own accessor methods by defining them within the class definition, or Ruby has a shortcut by using `attr_reader` for getter methods, `attr_writer` for setter methods, or `attr_accessor` for both a getter and a setter method.
+
 28. What is a getter method?
 
-29. What is a sett method?
+    A getter method is an instance method that (typically) returns the value being referenced by an instance variable.
 
-30. What is attractive_accessor?
+29. What is a setter method?
+
+    A setter method is an instance method that allows you to modify the value of an instance variable.
+
+30. What is attr_accessor?
+
+    `attr_accessor` is a method, that when invoked creates both a getter and setter method for the instance variable passed to it as an arugment. The argument passed to the `attr_accessor` method invocation should be a symbol representing the instance variable. EX:
+
+    ```ruby
+    class Person
+      attr_accessor :name
+      
+      def initialize(name)
+        @name = name
+      end
+    end
+    ```
+
+    In the above example, we have created both a getter method (`Person#name`) and a setter method (`Person#name=`) that allows us to both access and modify the `@name` instance variable.
 
 31. <b>How do you decide whether to reference an instance variable or a getter method?</b> 
 
-    Generally speaking, it is usually a good idea to invoke a getter method if there is one, rathr than reference the instance variable. When there is a getter method avaialbe to retrieve an instance method, you should invoke that because there could be important implementation within that getter method definition that may be needed. For example, if there is `@dob` instance variable within a `Person` object, that holds an Array object with three numeric elements that represent the persons month, day, and year of birth but when we retrieve the data we would like to have it formatted as a String in `'mm/dd/yyyy'` fashion; we could put that implementation into the getter method. EX:
+    Generally speaking, it is usually a good idea to invoke a getter method if there is one, rather than reference the instance variable. When there is a getter method availabe to retrieve an instance method, you should invoke that because there could be important implementation within that getter method definition that may be needed. For example, let's say there is `@dob` instance variable within a `Person` object that references an object of the `Time` class. When we want to retrieve the information within the `@dob` instance variable, we want it to be formatted in a String; we could put that implementation into the getter method defintion. EX:
 
     In the code below, the `Person#info` instance method invokes the `dob` getter method which formats the `Person` object's `@dob` variable the way in which we want when retrieving it. 
 
@@ -257,7 +301,7 @@
       end
     
       def dob
-        "#{@dob[0]}/#{@dob[1]}/#{@dob[2]}"
+        @dob.strftime('%m/%d/%Y')
       end
     
       def info
@@ -265,8 +309,8 @@
       end
     end
     
-    bob = Person.new('Robert', [1, 2, 2000])
-    bob.info # => "Hello, I am Robert and my birthday is 1/2/2000"
+    bob = Person.new('Robert', Time.new(2000, 1, 15))
+    bob.info # => "Hello, I am Robert and my birthday is 1/15/2000"
     ```
 
     However, if we re-write the `Person#info` method to reference the `@dob` instance variable instead of the getter method, this is the output we will see:
@@ -279,7 +323,7 @@
       end
     
       def dob
-        "#{@dob[0]}/#{@dob[1]}/#{@dob[2]}"
+        @dob.strftime('%m/%d/%Y')
       end
     
       def info
@@ -287,11 +331,9 @@
       end
     end
     
-    bob = Person.new('Robert', [1, 2, 2000])
-    bob.info # => "Hello, I am Robert and my birthday is [1, 2, 2000]"
+    bob = Person.new('Robert', Time.new(2000, 1, 15))
+    bob.info # => "Hello, I am Robert and my birthday is 2000-01-15 00:00:00 -0800"
     ```
-
-    
 
 32. <b>Why does the `#change_info` method not work as expected here?</b>
 
@@ -337,7 +379,64 @@
 
 33. When would you call a method with self?
 
+    You call a method with `self` when within an instance method definition you want to invoke a setter method. If you leave the `self` prefix off of the method invocation, Ruby thinks you are just creating a new local method variable. EX:
+
+    ```ruby
+    class Person
+      attr_accessor :name, :age
+      
+      def initialize(name, age)
+        @name = name
+        @age = age
+      end
+      
+      def another_year_older
+        self.age += 1
+      end
+    end
+    
+    bob = Person.new('Robert', 24)
+    bob.age # => 24
+    bob.another_year_older 
+    bob.age # => 25
+    ```
+
+    However, if we change the above code by leaving the `self` prefix off of the `age=` method invocation within the `another_year_older` instance method we would see the following:
+
+    ```ruby
+    class Person
+      attr_accessor :name, :age
+      
+      def initialize(name, age)
+        @name = name
+        @age = age
+      end
+      
+      def another_year_older
+        age += 1
+      end
+    end
+    
+    bob = Person.new('Robert', 24)
+    bob.age # => 24
+    bob.another_year_older # => NoMethodError: undefined method `+` for nil:NilClass
+    ```
+
+    Because we didn't prefix the `age=` method invocation with `self`, Ruby thought we were trying to create a new local method variable called `age`, which is why the `another_year_older` method isn't working.
+
 34. What are class methods?
+
+    Class methods are methods that are scoped at the class level. When defined they are prefixed with `self.` When invoking a class method, you use the class name followed by the method name. EX:
+
+    ```Ruby
+    class Person
+      def self.info
+        puts "This is a class method"
+      end
+    end
+    
+    Person.info # => "This is a class method"
+    ```
 
 35. What is the purpose of a class variable?
 
