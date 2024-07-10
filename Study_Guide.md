@@ -427,7 +427,7 @@ A couple things to consider when evaluating whether to use class inheritance vs 
 
 <h2>Encapsulation</h2>
 
-Encapsulation is hiding pieces of functionality and making it unavailable to the rest of the code base. It is a form of data protection, so that data cannot be manipulated or changed without obvious intention.
+Encapsulation is a form of data protection where data (state) and functionality (behavior) are combined into a single unit called an "object". By containing an object's state and behavior within itself, we can then pass these objects around in our program to use as needed. We can also choose to hide certain data, or expose it as needed, which helps in orgnizing and protecting the inner workings of our code.
 
 <h2>Polymorphism</h2>
 
