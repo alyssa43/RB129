@@ -10,6 +10,7 @@
   # public, private, and protected methods
   # accessor methods
   # namespacing
+  # equivalence
   # class variables - class variables are useful for storing common state tied to the class rather than specific instances
 
 # provide code snippets using model to demonstrate concept
@@ -20,7 +21,7 @@
 
 # leave lots of notes as you go to improve understanding
 
-# some things to consdier reflecting on and annotating:
+# some things to consider reflecting on and annotating:
   # when would I use this concept? - What is a classic use case?
   # does the real world situation im modeling here feel like it would be better modeled with a different structure? (when illustrating polymorphism, you may come to realize the nouns you are using to illustrate duck typing would make more sense in a common class inheritance structure, or vice versa)
 
@@ -35,6 +36,7 @@
 
 # Go over quizzes and re-format questions to re-quiz yourself
 
+############# PUBLIC - PRIVATE - PROTECTED METHODS #############
 class Person
   attr_reader :name
 
@@ -87,3 +89,5 @@ p bob.older_than?(joe) # => false -> because both `bob` and `joe` are instances 
 # p joe.older_than?(car) # => NoMethodError because the Car class' `age` instance method is protected
 
 p bob.birthyear # => "2000"
+
+################################################################
