@@ -91,3 +91,46 @@ p bob.older_than?(joe) # => false -> because both `bob` and `joe` are instances 
 p bob.birthyear # => "2000"
 
 ################################################################
+
+Part 1:
+
+class Dog
+  def initialize(name)
+    @name = name
+  end
+end
+
+puppy = Dog.new('Benji')
+another_puppy = Dog.new('Benji')
+
+# What will this output? Why?
+
+p puppy == another_puppy
+
+# we are comparing different objects
+# what do we mean by that? (think back to 101 and variables as pointers)
+
+p puppy
+p another_puppy
+p puppy.object_id
+p another_puppy.object_id
+
+
+#=============================================
+Part 2:
+
+# Have the students implement the `==` method
+
+class Dog
+  attr_reader :name
+
+  def initialize(name)
+    @name = name
+  end
+
+  def ==(other)
+    name == other.name
+  end
+end
+
+p puppy == another_puppy # true
