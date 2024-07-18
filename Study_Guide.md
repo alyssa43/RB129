@@ -789,6 +789,22 @@ In this example, `self.name =` acts the same as calling `sparky.name =` from out
 
 <h2>Fake Operators and Equality</h2>
 
+`==` : At the object level (`BasicObject#==`), this method returns `true` only if the two objects being compared are the same object. This means that this implementation is the same as `BasicObject#equal?`. Because the default implementation for `BasicObject#==` is not very useful, we can override this method by defining our own `==` custom instance method within a custom class. (When you define a custom `==` instance method, you also get the `!=` method for free.)
+
+
+
+`equal?` : Compares two variables point to the same object.
+
+
+
+`===` : used by `case` statements. Works by asking if the object being compared 'fits' within the group. For example, if we have ` (1..50) === 25` we are asking if 25 fits within a range of 1-50. Or, if we have `String === "hello"`, `true` would be returned. 
+
+ 
+
+`eql?` : determines if two objects contain the same value and if they're of the same class.
+
+
+
 <h2>Collaborator Objects</h2>
 
 Collaboration is a way of modeling relationships between different objects. There are a number of different types of relationships discussed with regard to OOP. When referring to a collaborative relationship, it is one of association, which can be thought of as a "has-a" relationship. For example, a library has books, so there is an associative relationship between objects of class Library and objects of class Book. <I>A collaborative relationship is a relationship of association - NOT inheritance.</I> 
