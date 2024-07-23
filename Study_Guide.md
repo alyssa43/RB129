@@ -312,6 +312,8 @@ In the above example we have a class method called `total_students` within the `
 
 <h2>Method Access Control</h2>
 
+====================
+
 Access control is a concept that exits in a number of programming languages, including Ruby. It is generally implemented through the use of <i>access modifiers</i>. The purpose of access modifiers is to allow or restrict access to a particular thing. In Ruby, the things that we are concerned with restricting access to are the methods defined in a class. In a Ruby context, therefore, you'll commonly see this concept referred to as <b>method access control</b>. 
 
 The way that Method Access Control is implemented in Ruby is through the use of the `public`, `private`, and `protected` access modifiers. A `public` method is a method that is available to anyone who knows either the class name or the object's name. These methods are readily available for the rest of the program to use and comprise the class's <I>interface</I> (that's how other classes and objects will interact with this class and its objects).
