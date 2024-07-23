@@ -16,7 +16,7 @@ end
 alyssa = Student.new('Alyssa')
 ```
 
-In the above example we have created a new `Student` object by invoking the `#new` method on the class `Student`, which takes the String `'Alyssa'` as an argument. Because the `Student#new` method invocation invoke the `Student#initialize` method, the String `'Alyssa'` is what is being passed into the `Student#initialize` method, which then assigns the `@name` instance variable to reference the String `'Alyssa'`. A new local variable called `Alyssa` is then assigned to reference this new `Student` object. This entire process of creating a new object is known as instantiation.
+In the above example we have created a new `Student` object by invoking the `#new` method on the class `Student`, which takes the String `'Alyssa'` as an argument. Because the `Student#new` method invocation invokes the `Student#initialize` method, the String `'Alyssa'` is what is being passed into the `Student#initialize` method, which then assigns the `@name` instance variable to reference the String `'Alyssa'`. A new local variable called `alyssa` is then assigned to reference this new `Student` object. This entire process of creating a new object is known as instantiation.
 
 <h2>States and Behavior</h2>
 
@@ -74,7 +74,7 @@ p alyssa.current_course # => nil
 
 In the above example we have created a new instance of the `Student` class and assigned a new local variable called `alyssa` to reference this object. When we refer to `alyssa`'s state we are referring to the instance variables within that object. Which in this case are the instance variables `@name`, `@age`, and `@current_course`. This example shows how instance variables differ from local variables because when we reference an uninitialized instance variable, in this case `@current_course`, `nil` is returned. Whereas if we tried to reference an uninitialized local variable we would receive a `NameError` exception.
 
-<b>Class Variables:</b> A class variable is a variable that starts with `@@` and is scoped at the class level, meaning that it is shared between all instances of that class. 
+<b>Class Variables:</b> A class variable is a variable that starts with `@@` and is scoped at the class level, meaning that it is shared between all instances of that class (and it's subclasses). 
 
 ```ruby
 class Student
@@ -131,155 +131,184 @@ Guitar.strings  # => 4
 
 Because the `Ukulele` class subclasses the `Guitar` class, and because class variables are shared between all instances of that class and it's subclasses, when we try to create a new class variable called `@@strings` specific to the `Ukulele` class, we are actually reassigning the `@@strings` class variable within the `Guitar` class. This example demonstrates how class variables are shared within the inheritance hierarchy, which can cause undesired side effects. In most cases, instance variables are a better option when working with inheritance.
 
-<b>Constants:</b> A constant variable is a variable that typically is in all uppercase letters, although technically they only need to have the first letter uppercased. Constant variables should never be changed, however Ruby will allow you to but it will warn you when doing so. They have a lexical scope, which means that where the constant variable is defined determines where it is available. When a reference to a constant variable is being resolved, Ruby first searches the current structure. If it is not found within that structure Ruby then travels up the inheritance hierarchy chain where the constant is being referenced. If Ruby searches the entire hierarchy chain and it is not found, Ruby then searches the top level scope.  EX:
+<b>Constants:</b> A constant variable is a variable that is typically in all uppercase letters, although technically only the first letter must be uppercased. Constant variables should never be changed, however Ruby will allow you to modify it, but it will warn you when doing so. They have a lexical scope, which means that where the constant variable is defined determines where it is available. When a reference to a constant variable is being resolved, Ruby first searches the current class or module. If it is not found within that structure Ruby then travels up the inheritance hierarchy chain where the constant is being referenced. If Ruby searches the entire hierarchy chain and it is not found, Ruby then searches the top level scope.  EX:
 
 ```ruby
-```
+PLANET = 'Earth' # Line 1
 
-
-
-===========
-
-Constant variables are variables that begin with an uppercase letter, although they are more commonly in all uppercase letters, and they have a lexical scope. Lexical scope means that where the constant is defined in the source code determines what it is available. They are called constants because they are a variable that should never be changed. If you do attempt to reassign a constant Ruby will warn you, but will not generate an error. When resolving a constant Ruby first searches the surrounding structure of the constant reference. If the constant is not found there, Ruby then traverses up the inheritance hierarchy of the structure that references the constant. If the constant is still not found, Ruby will then search the top level scope. EX:
-
-```ruby
-DOG_YEARS = 7
-
-class Animal; end
-class Dog < Animal
-  def initialize(age)
-    @age = age
-  end
-  
-  def age
-    DOG_YEARS * @age
+class Being
+  def initialize(name)
+    @name = name
   end
 end
 
-sparky = Dog.new(4)
-puts sparky.age # => 28
+class Person < Being
+  def to_s
+    "Hello, my name is #{@name} and I live on #{PLANET}." # Line 11
+  end
+end
+
+class Alien < Being
+  PLANET = 'Mars' # Line 16
+  
+  def to_s
+    "Hello, my name is #{@name} and I live on #{PLANET}."	# Line 19
+  end
+end
+
+alyssa = Person.new('Alyssa')
+puts alyssa # => Hello, my name is Alyssa and I live on Earth.
+
+zim = Alien.new('Zim')
+puts zim # => Hello, my name is Zim and I live on Mars.
+
+Alien::PLANET  # => "Mars"
+Person::PLANET # => NoMethodError - uninitialized constant called `PLANET` within `Person` class
 ```
 
-In the above example, when ruby tries to resolve the constant reference on line 11 within the `age` instance method definition, it first searches within the `Dog` class, which remains unresolved because it is not found there. It then searches up the inheritance chain which would be the classes: `Animal`, `Object`, `Kernel`, `BasicObject`, none of which are able to resolve the constant because it is not found within those classes. Finally, it searches the top level (outer most scope of our program); which is where it is finally found and able to be resolved.
+In the above example, we have two different constants - both named `PLANET`. Because they are defined within different scopes, that is how we can know they are in fact different constant variables.
+
+* The first `PLANET` constant variable to be initialized is on line 1 at the top level of our program, where it is assigned to reference the String `'Earth'`.
+* The second `PLANET` constant variable to be initialized is on line 16 within the `Alien` class definition, where it is assigned to reference the String `'Mars'`.
+
+When we invoke `puts alyssa`, we in turn invoke the `Person#to_s` method on our `Person` object `alyssa`, which outputs an interpolated String that references the constant `PLANET`. When Ruby tries to resolve this constant it:
+
+- First searches the current class, which is the `Person` class, where it is not found.
+
+- Then travels up the inheritance hierarchy, looking within the classes `Being`, `Object`, `Kernel`, and `BasicObject`, but still is not found.
+
+- Finally, it searches the top level of our program, where it find the `PLANET` constant and returns the String `Earth`.
+
+When we invoke `puts zim,` we in turn invoke the `Alien#to_s` method on our `Alien` object `zim`, which outputs an interpolated String that references the constant `PLANET`. When Ruby tries to resolve this constant it:
+
+* First searches the `Alien` class, where it find the `PLANET` constant and returns the value it references which is the String `'Mars'`.
+
+Finally, on the last two lines of code we use the scope resolution operator (`::`) to try and access the constants within the `Alien` and `Person` classes:
+
+*  When we invoke `Alien::PLANET`, we are telling Ruby that we want to return the value referenced by the `PLANET` constant located within the `Alien` class, which returns the String `'Mars'`. 
+* When we invoke `Person::PLANET,` we are telling Ruby that we want to return the value referenced by the `PLANET` constant located within the `Person` class. However, there is not a `PLANET` constant within the `Person` class definition, which is why we see a `NoMethodError` exception.
 
 <h2>Getter & Setter Methods</h2>
 
-Getter and setter metohds give us a way to expose and change an object's state. We can also use these methods from within the class as well. Accessor methods within a class allow us to retrieve (getter) and/or change (setter) an instance variable for an object. Without getter and setter methods, if we tried to retrieve or change an instance variable we would receive a `NoMethodError` exception. EX:
+Getter and setter methods are types of accessor methods. An accessor method is an instance method within a class that allows access to an instance variable within that class. It is used to retrieve and/or modify the data referenced by an instance variable.
+
+* Getter methods are instance methods that (typically) return the value being referenced by an instance variable. Although, you are able to define your own custom getter methods that can return some variation of the value referenced by the instance variable if needed.
+* Setter methods are instance method that allow you to modify the value of an instance variable. The value passed in as the argument upon invocation of a setter method will become the new value being referenced by the instance variable.
+
+You can create your own accessor methods by defining them yourself, or you can use the shortcuts Ruby provides by using `attr_reader` for getter methods, `attr_writer` for setter methods, or `attr_accessor` for both a getter and a setter method.
 
 ```ruby
-class GoodDog
-  def initialize(name)
+class Person
+  attr_accessor :name # creates a getter & setter method for the `@name` instance variable
+
+  def initialize(name, age)
     @name = name
+    @age = age
+  end
+
+  def age # getter method for the `@age` instance variable
+    @age
+  end
+
+  def age=(new_age) # setter method for the `@age` instance variable
+    @age = new_age
   end
 end
 
-sparky = GoodDog.new('Sparky')
+alyssa = Person.new('Alyssa', 34)
 
-puts sparky.name # => NoMethodError
+# returns value referenced by `@name`
+p alyssa.name # => 'Alyssa'
+
+# returns value referenced by `@age`
+p alyssa.age # => 34
+
+alyssa.name = 'Aly' # modifies value referenced by `@name`
+alyssa.age = 35 # modifies value referenced by `@age`
+
+# returns value referenced by `@name`
+p alyssa.name # => 'Aly'
+
+# returns value referenced by `@age`
+p alyssa.age # => 35
 ```
 
-To retrieve the `@name` instance variable we need to add a getter method to our `GoodDog` class:
+If you try to access an instance variable that does not have an accessor method, you will receive a `NoMethodError` exception for trying to access an undefined method. EX:
 
 ```ruby
-class GoodDog
+class Person
   def initialize(name)
     @name = name
   end
-  
-  def name # getter method
-    @name
-  end
 end
 
-sparky = GoodDog.new('Sparky')
-
-puts sparky.name # => Sparky
-```
-
-And to be able to modify the `@name`instance variable we need to add a setter method to our `GoodDog` class:
-
-```ruby 
-class GoodDog
-  def initialize(name)
-    @name = name
-  end
-  
-  def name # getter method
-    @name
-  end
-  
-  def name=(new_name) # setter method
-    @name = new_name
-  end
-end
-
-sparky = GoodDog.new('Sparky')
-puts sparky.name # => Sparky 
-sparky.name = 'Fido' # invoking the setter method
-puts sparky.name # => Fido
+alyssa = Person.new('Alyssa')
+alyssa.name # => NoMethodError: undefined method `name` for `Person` object
 ```
 
 <i>*Note: setter methods always return the value passed to it as an arugment, regardless of what happens inside the method. If the setter tried to return something other than the argument's value, it just ignores that attempt.</i>
 
-Because accessor methods are so commonplace, Ruby has a built-in way to automatically create these getter and setter method for us, using the `attr_*` methods. To create a getter method we use `attr_reader`, and to create a setter method we use `attr_writer`. Or if we'd like to create both at the same time we can use `attr_accessor`. EX:
-
-```ruby
-class GoodDog
-  attr_accessor :name
-  
-  def initialize(name)
-    @name = name
-  end
-end
-
-sparky = GoodDog.new('Sparky')
-puts sparky.name # => Sparky 
-sparky.name = 'Fido' # invoking the setter method
-puts sparky.name # => Fido
-```
-
 <h2>Instance Methods vs. Class Methods</h2>
 
-<b>Instance Methods:</b> We are able to give our classes <i>behaviors</i> with instance methods. All objects of the same class have the same behaviors (though they contain different <i>states</i> (i.e., instance variables)).
+<b>Instance Methods:</b> An instance method is a method defined within a class, that provides behaviors to objects created from that class. Instances of a class can invoke instance methods defined within the class' definition, as long as the instance method is `public`. 
 
 ```ruby
-class Person
-  def initialize(name)
+class Student 
+  def initialize(name, course)
     @name = name
+    @course = course
   end
-  
-  def speak
-    "Hello, my name is #{@name}"
+
+  def study
+    "#{@name} is studying for #{@course}."
+  end
+
+  def take_exam
+    "#{@name} is taking an exam for #{@course}."
+  end
+
+  def eat_lunch
+    "#{@name} is eating lunch."
   end
 end
 
-puts Person.new('Alyssa').speak #=> Hello, my name is Alyssa
+alyssa = Student.new('Alyssa', 'RB 129')
+
+alyssa.study 		 # => "Alyssa is studying for RB 129."
+alyssa.take_exam # => "Alyssa is taking an exam for RB 129."
+alyssa.eat_lunch # => "Alyssa is eating lunch."
 ```
 
-In this example we have an instance method called `speak`. All `Person` objects will have the ability to `speak` because this instance method gives the `Person` class that behavior. 
+In the above example, we have defined a `Student` class that has three public instance methods: `study`, `take_exam`, and `eat_lunch`. Which means that any instance of the `Student` class will have the ability to invoke these methods, in turn giving them these behaviors/functionality. By instantiating a new instance of the `Student` class called `alyssa`, it demonstrates how `alyssa` is able to invoke these instance methods, giving that object the ability to study, take exams, and eat lunch. 
 
-<b>Class Methods:</b> Class methods are methods we can call directly on the class itself, without having to instantiate any objects. When defining a class method, we prepend the method name with the reserved word `self.`like this:
+<b>Class Methods:</b> Class methods are methods that are scoped at the class level. They are defined within a class definition and prefixed with `self.`. Since class methods are scoped at the class level, they must be invoked directly on the class itself. Because class methods are scoped at the class level, objects instantiated from that class cannot invoke these methods. They are used more for functionality that pertains to the class itself, and not any specific object instantiated from the class. EX:
 
 ```ruby
-class Person
-  @@total_people = 0 # class variable
-  
+class Student 
+  @@total_students = 0
+
   def initialize
-    @@total_people += 1
+    @@total_students += 1
   end
-  
-  def self.total_people # class method
-    @@total_people
+
+  def self.total_students
+    @@total_students
   end
+end
+
+Student.total_students # => 0
+
+student1 = Student.new
+Student.total_students # => 1
+
+student2 = Student.new
+Student.total_students # => 2
+
+student3 = Student.new
+Student.total_students # => 3
 ```
 
-Then we can call the class method by using the class name followed by the method name, without even having to instantiate any object, like this:
-
-```ruby
-Person.total_people # => 0
-```
-
-Class methods are where we put functionality that does not pertain to individual objects. Objects contain state, and if we have a method that does not need to deal with states, then we can just use a class method, like this example.
+In the above example we have a class method called `total_students` within the `Student` class that returns the value of a class variable called `@@total_students`. With each new instance created from the `Student` class the `@@total_students` class variable gets incremented by 1, keeping count of the number of `Student` objects. So, when we invoke `Student.total_students` , we are invoking it straight on the `Student` class which tells Ruby to invoke the `self.total_students` class method within the `Student` class definition. Which will then return the value referenced by `@@total_students`, which starts at `0` and then increments by `1` up until the final line which returns `3`.
 
 <h2>Method Access Control</h2>
 
