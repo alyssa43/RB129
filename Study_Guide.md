@@ -2,155 +2,145 @@
 
 <h2>Classes and Objects</h2>
 
-<b>Classes define objects</b>. Objects are created from classes. Think of classes as molds, and objects as the things you produce out of those molds. You can think of classes as basic outlines of what an object should be made of and what it should be able to do. 
+We use a class to create an object. The class acts as a mold and determines what behaviors and attributes an object created from that class will have. The object itself is a unique and individual item that contains it's own attributes and behaviors within itself, so that it can then be used throughout our program.
 
-Defining a class is similar to defining a method. We replace  `def`  with the `class` keyword and use PascalCase naming convention for the class name. As with defining a method, we use `end` to finish the definition. EX:
-
-```ruby
-class GoodDog
-end
-```
-
-To then create an object (or instance) of our `GoodDog` class, we invoke the `Class#new` method on the `GoodDog` class like so:
+To initialize a new object you must invoke the `#new` method on the class name that you wish to instantiate from, and if applicable pass any arguments required. To see if a class requires arguments upon instantiation you can look within the class at the constructor method, which is the `#initialize` instance method. When `#new` is invoked, Ruby is triggered to invoke that classes `#initialize` method.
 
 ```ruby
-GoodDog.new
-```
-
-To save this new object to be referenced later, we can save it into a local variable like so:
-
-```ruby
-sparky = GoodDog.new
-```
-
-We say that `sparky` is an object or instance of class `GoodDog`. This entire workflow of creating a new object or instance from a class is called <b>instantiation</b>, so we can also say that we've instantiated an object called `sparky` from the class `GoodDog`.
-
-It is very common for a class to include an instance method called `initialize`. The `initialize` method is a <i>constructor</i> that gets called every time you create a new object. When using the `Class#new` method it triggers that classes `initialize` method. EX:
-
-```ruby
-class GoodDog
+class Student
   def initialize(name)
     @name = name
   end
 end
 
-sparky = GoodDog.new('Sparky')
+alyssa = Student.new('Alyssa')
 ```
+
+In the above example we have created a new `Student` object by invoking the `#new` method on the class `Student`, which takes the String `'Alyssa'` as an argument. Because the `Student#new` method invocation invoke the `Student#initialize` method, the String `'Alyssa'` is what is being passed into the `Student#initialize` method, which then assigns the `@name` instance variable to reference the String `'Alyssa'`. A new local variable called `Alyssa` is then assigned to reference this new `Student` object. This entire process of creating a new object is known as instantiation.
 
 <h2>States and Behavior</h2>
 
-When defining a class, we typically focus on two things: <i>state</i> and <i>behaviors</i>. <b> State</b> refers to the data associated to an individual object (which are tracked by instance variables). <b>Behaviors</b> are what objects are capable of doing (instance methods). EX:
+When defining a class, we may have important data that we want an object of that class to hold. This data represents the object's state and is held within the object's instance variables. The behavior of an object, on the other hand, is determined by the methods available to that object. By defining instance methods within our class, we enable specific behaviors for instances of that class. 
 
 ```ruby
-class GoodDog
+class Student
+  attr_reader :name
+  
   def initialize(name)
-    @name = name
+    @name = name	# state
   end
   
-  def speak
-    "Arf!!!"
+  def study 		 # behavior
+    "#{name} is studying"
   end
 end
 
-fido = GoodDog.new('Fido')
-buddy = GoodDog.new('Buddy')
+alyssa = Student.new('Alyssa')
+bob = Student.new('Robert')
+
+alyssa.name 	# => 'Alyssa' 
+alyssa.study	# => "Alyssa is studying"
+
+bob.name			# => 'Robert'
+bob.study 		# => "Robert is studying"
 ```
 
-In this example we have two `GoodDog` objects, both have the same behaviors (the ability to `speak`) and each have their own unique state. `fido` has a `@name` instance variable assigned to reference `'Fido'`while `buddy` has a `@name` instance variable assigned to reference `'Buddy'`. As well, each `GoodDog` object has its own unique oject id.
+In the above example, we have instantiated two new instances of the class `Student`. One is being referenced by the local variable `alyssa` and the other is being referenced by the local variable `bob`. Both objects have the ability to `study` which is provided by the `Student#study` instance method. However, each object has their own unique state that is being held within the `@name` instance variable. `alyssa` 's `@name` instance variable references the String `'Alyssa'`, while `bob`'s `@name` instance variable references the String `'Robert'`. This example demonstrates how different objects of the same class will share behaviors but have their own unique state.
 
 <h2>Variables</h2>
 
-<b>Instance Variables</b>: Instance variable are variables that start with the `@` symbol and are scoped at the object level. Instance variables are one of the ways we tie data to objects. Instance variables keep track of the <i>state</i> of an object. It is a variable that exists as long as the object instance exists, it does not "die" after the `initialize` method is run. "It lives on", to be referenced, until the object instance is destroyed. EX:
+<b>Instance Variables</b>: An instance variable is a variable that holds a value specifically correlated to an individual object. It begins with the `@` symbol and is scoped at the object level. Because it is scoped at the object level, that means that each individual object will have their own unique set of instance variables. An object's collection of their instance variables is known as that object's state.
 
-```ruby 
-class GoodDog
+```ruby
+class Student
+  attr_reader :name, :age, :current_course
+  
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+  
+  def set_current_course(course)
+    @current_course = course
+  end
+end
+
+alyssa = Student.new('Alyssa', 35)
+
+p alyssa.name # => 'Alyssa'
+p alyssa.age  # => 35
+p alyssa.current_course # => nil
+```
+
+In the above example we have created a new instance of the `Student` class and assigned a new local variable called `alyssa` to reference this object. When we refer to `alyssa`'s state we are referring to the instance variables within that object. Which in this case are the instance variables `@name`, `@age`, and `@current_course`. This example shows how instance variables differ from local variables because when we reference an uninitialized instance variable, in this case `@current_course`, `nil` is returned. Whereas if we tried to reference an uninitialized local variable we would receive a `NameError` exception.
+
+<b>Class Variables:</b> A class variable is a variable that starts with `@@` and is scoped at the class level, meaning that it is shared between all instances of that class. 
+
+```ruby
+class Student
+  @@total_students = 0 # initializing class variable
+  
   def initialize(name)
     @name = name
+    @@total_students += 1 # incrementing class variable by 1 with each new instance
+  end
+  
+  def self.total_students
+    @@total_students	# accessible within a class method
+  end
+  
+  def total_students
+    @@total_students	# accessible within an instance method
   end
 end
 
-sparky = GoodDog.new('Sparky')
+Student.total_students	# => 0
+
+alyssa = Student.new('Alyssa')
+
+p alyssa.total_students	 # => 1
+p Student.total_students # => 1
+
+bob = Student.new('Robert')
+
+p bob.total_students     # => 2
+p alyssa.total_students	 # => 2
+p Student.total_students # => 2
 ```
 
-In the above example, the string "Sparky" is being passed from the `new` method through to the `initialize` method, and is assigned to the local variable `name`. Within the constructor (i.e., the `initialize` method), we then set the instance variable `@name` to `name`, which results in assigning the string `"Sparky"` to the `@name` instance variable. 
-
-Every object's state is distinct, and instance variables are how we keep track.
-
-If we try to reference an instance variable that has not yet been initialized; `nil` will be returned. EX:
+In the above example, the `Student` class has a class variable called `@@total_students` that is initialized on line 2 within the `Student` class definition. With each new instance of the `Student` class, the `@@total_students` variable is incremented by `1`. We can then access this class variable within class and instance methods (as long as the class variable has been initialized). This class variable is then shared by all instances of the `Student` class. Because this is a shared variable, we must be careful not to accidentally modify it. Which is why if working with inheritance, it is recommended to not use class variables. EX:
 
 ```ruby
-class GoodDog
-  def get_name
-    @name
+class Guitar
+  @@strings = 6
+  
+  def self.strings
+    @@strings
   end
 end
 
-GoodDog.new.get_name # => nil
+Guitar.strings # => 6
+
+class Ukulele < Guitar
+  @@strings = 4
+end
+
+Ukulele.strings # => 4
+Guitar.strings  # => 4 
 ```
 
-This happens because instance variables are scoped at the object level, where as if we tried to reference a local variable that has not yet been initiailzed we would get a `NameError` exception. Because the scope of instance variables is at the object level, this means that the instance variable is accessible in an object's instance methods, even if it's initialized outside of that instance method. 
+Because the `Ukulele` class subclasses the `Guitar` class, and because class variables are shared between all instances of that class and it's subclasses, when we try to create a new class variable called `@@strings` specific to the `Ukulele` class, we are actually reassigning the `@@strings` class variable within the `Guitar` class. This example demonstrates how class variables are shared within the inheritance hierarchy, which can cause undesired side effects. In most cases, instance variables are a better option when working with inheritance.
 
-<i>*Note: You'll often find in LS text (and external literature) that the term "attributes" in Ruby is used quite loosely and is generally approximated as <u>instance variables</u>. Most of the time, these instance variables have accessor methods (because objects that are entirely secretive aren't very useful); however, it's not a must for the purposes of this definition.</i>
-
-<b>Class Variables:</b> Class variables are variables that start with `@@` and are scoped at the class level. Just as instance variables capture information related to specific instances of classes (i.e., objects), we can create variables for an entire class that are appropriately named class variables. They exhibit two main behaviors:
-
-1. All objects share 1 copy of the class variable. (This also implies objects can access class variables by way of instance methods.)
-2. Class methods can access a class variable provided the class variable has been initialized prior to calling the method.
+<b>Constants:</b> A constant variable is a variable that typically is in all uppercase letters, although technically they only need to have the first letter uppercased. Constant variables should never be changed, however Ruby will allow you to but it will warn you when doing so. They have a lexical scope, which means that where the constant variable is defined determines where it is available. When a reference to a constant variable is being resolved, Ruby first searches the current structure. If it is not found within that structure Ruby then travels up the inheritance hierarchy chain where the constant is being referenced. If Ruby searches the entire hierarchy chain and it is not found, Ruby then searches the top level scope.  EX:
 
 ```ruby
-class Person
-  @@total_people = 0 # initialized at class level
-  
-  def self.total_people
-    @@total_people  # accessible from class method
-  end
-  
-  def initialize
-    @@total_people += 1 # reassigned from instance method
-  end
-  
-  def total_people
-    @@total_people # accessible from instance method
-  end
-end
-
-Person.total_people # => 0
-Person.new
-Person.new
-bob = Person.new
-joe = Person.new
-
-Person.total_people # => 4
-bob.total_people 		# => 4
-joe.total_people 		# => 4
 ```
 
-We can see in this example, that even when we have two different `Person` objects in `bob` and `joe`, we're effectively accessing and modifying one copy of the `@@total_people` class variable. We can't do this with instance variables or local variables; only class variables can share state between objects (we're going to ignore globals).
 
-<i>Note: It can be dangerous when working with class variables within the context of inheritance, because there is only one copy of the class variable across all sub-classes:</i>
 
-```ruby
-class Vehicle
-  @@wheels = 4
-  
-  def self.wheels
-    @@wheels
-  end
-end
+===========
 
-Vehicle.wheels # => 4
-
-class Motorcycle < Vehicle
-  @@wheels = 2
-end
-
-Motorcycle.wheels # => 2
-Vehicle.wheels 		# => 2
-```
-
-<i>For this reason, avoid using class variables when working with inheritance. If fact, some Rubyists would go as far as recommending avoiding class variables all together. The solution is usually to use class instance variables, but we will talk more about that later in the course.</i>
-
-<b>Constants:</b> Constant variables are variables that begin with an uppercase letter, although they are more commonly in all uppercase letters, and they have a lexical scope. Lexical scope means that where the constant is defined in the source code determines what it is available. They are called constants because they are a variable that should never be changed. If you do attempt to reassign a constant Ruby will warn you, but will not generate an error. When resolving a constant Ruby first searches the surrounding structure of the constant reference. If the constant is not found there, Ruby then traverses up the inheritance hierarchy of the structure that references the constant. If the constant is still not found, Ruby will then search the top level scope. EX:
+Constant variables are variables that begin with an uppercase letter, although they are more commonly in all uppercase letters, and they have a lexical scope. Lexical scope means that where the constant is defined in the source code determines what it is available. They are called constants because they are a variable that should never be changed. If you do attempt to reassign a constant Ruby will warn you, but will not generate an error. When resolving a constant Ruby first searches the surrounding structure of the constant reference. If the constant is not found there, Ruby then traverses up the inheritance hierarchy of the structure that references the constant. If the constant is still not found, Ruby will then search the top level scope. EX:
 
 ```ruby
 DOG_YEARS = 7
