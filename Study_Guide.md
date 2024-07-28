@@ -467,93 +467,168 @@ In the above example we have four classes:
 
 <h2>Encapsulation</h2>
 
-Encapsulation is a form of data protection where data (state) and functionality (behavior) are combined into a single unit called an "object". By containing an object's state and behavior within itself, we can then pass these objects around in our program to use as needed. We can also choose to hide certain data, or expose it as needed, which helps in orgnizing and protecting the inner workings of our code.
+Encapsulation is a form of data protection where data (state) and functionality (behavior) are combined into a single unit called an "object". By containing an object's state and behavior within itself, we can then pass that object around in our program to use as needed. We can also choose to hide certain data, or expose it as needed, which helps in keeping our code organized and easier to understand and maintain. Because encapsulation bundles data and functionality together into a singular object, it allows us to hide this data and functionality from the rest of our code if desired. Ruby uses method access control to determine what functionality of an object's is accessible. The way in which we define a class' instance methods determines what functionality is accessible to objects instantiated from that class, from outside of the class. For instance, if we define a public instance method within a class, any object instantiated from that class can access that method from outside of the class. Any private or protected instance methods within a class can only be invoked from within the class itself, usually from another instance method that is typically public. If a class does not have any public instance methods, objects instantiated from that class will essentially not have any behavior, which would make for a not very helpful class. The public interface of a class acts as a layer of abstraction that allows objects of that class to interact with it's public instance methods without needing to be aware of the internal details. 
+
+```ruby
+class Person
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+  
+  def eat
+    "#{@name} is eating."
+  end
+  
+  def sleep
+    "#{@name} is sleeping."
+  end
+end
+
+bob = Person.new('Robert', 25)
+```
+
+In the above example we have defined a class called `Person`. Within this class definition we have two public instance methods called `eat` and `sleep`. This means that any object instantiated from the `Person` class will have the behaviors, given to them through the instance methods, `eat` and `sleep`. Within the `Person` class there are also two instance variables, `@name` and `@age`, that will be assigned to reference the values of the arguments passed in to the `Person#new` method invocation. We then instantiate a new instance of the `Person` class by invoking the `#new` method on the class `Person` and pass in the string `'Robert'` and the integer `25` as the arguments. We then assign a new local variable called `bob` to reference this new object, now giving `bob` the ability to `eat` and `sleep` later on throughout the program. This demonstrates how an object can hold it's own behavior and state within itself.
 
 <h2>Polymorphism</h2>
 
-Polymorphism ("poly" => "many", "morph" => "forms") is the ability for different types of data to respond to a common interface. For instance, if we have a method that invoke the `move` method on it's argument, we can pass the method any type of argument as long as the argument has a compatible `move` method. The object might represent a human, a cat, a jellyfish, or, conceivably, even a car or train. That is, it lets obejcts of different types respond to the same method invocation. EX:
+Polymorphism is what occurs when objects of different classes respond to the same method invocation. Polymorphism can be accomplished by:
+
+* Class Inheritance: when a subclass inherits behavior(s) from a superclass.
+* Interface Inheritance: when a class inherits behavior(s) from mixing in a module.
+* Duck Typing: when classes of different types all have the same method name and number of arguments, so that they can all be invoked in a similar manner.
+
+When trying to determine which method is appropriate, it will depend on the scenario. If there is a clear inheritance hierarchical relationship between the classes (classes have an "is-a" realtionship), class inheritance is typically the best solution. If classes do not have an "is-a" relationship but classes share a "has-a" relationship who would use the method in the same exact way, interface inheritance is typically the best solution. And finally, if classes are unrelated but have similar behavior, but those behaviors have different implementation, duck typing is probably a good solution.
 
 ```ruby
-class Animal
-  def move
-    "I can move!"
+# class inheritance
+class Person
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+  
+  def eat
+    "#{@name} is eating."
   end
 end
 
-class Dog < Animal; end
-class Cat < Animal; end
-class Fish < Animal; end
+class Student < Person
+	def initialize(name, age, student_id)
+    super(name, age)
+    @student_id = student_id
+  end
+end
 
-puts Dog.new.move  # => I can move
-puts Cat.new.move  # => I can move
-puts Fish.new.move # => I can move
+class Musician < Person
+  def initialize(name, age, genre)
+    super(name, age)
+    @genre = genre
+  end
+end
+
+bob = Person.new('Robert', 25)
+alice = Student.new('Alice', 30, 12345)
+luke = Musician.new('Luke', 40, 'country')
+
+bob.eat # => "Robert is eating."
+alice.eat # => "Alice is eating."
+luke.eat # => "Luke is eating."
 ```
 
-In the above example we use <b>inheritance</b> to allow the `Dog`, `Cat`, and `Fish` class to all use the `move` method within the `Animal` class. Another way to achieve polymorphism is to use a <b>module</b>. Ruby allows us to define a `Module` and then mix it in to classes as we choose. EX:
+In the above example we have three classes: `Person`, `Student`, and `Musician`. The `Person` class is the superclass for both the `Student` and `Musician` class. This demonstrates how class inheritance is appropraite when there is a "is-a" relationship (i.e., a student is a person, a musician is a person). All three objects instantiated from these different classes are able to invoke the `Person#eat` instance method because of behavior inherited through class inheritance.
 
 ```ruby
-module Move
-  def move
-    puts "I can move"
+# interface inheritance
+module Climbable
+  def climb 
+    "Climbing a #{self.class}."
   end
 end
 
-class Dog include Move; end
-class Cat include Move; end
-class Fish include Move; end
+class Mountain
+  include Climbable
+end
 
-puts Dog.new.move  # => I can move
-puts Cat.new.move  # => I can move
-puts Fish.new.move # => I can move
+class Tree
+  include Climbable
+end
+
+class Ladder
+  include Climbable
+end
+
+mt_hood = Mountain.new
+pine_tree = Tree.new
+step_stool = Ladder.new
+
+p mt_hood.climb # => "Climbing a Mountain."
+p pine_tree.climb # => "Climbing a Tree."
+p step_stool.climb # => "Climbing a Ladder."
 ```
 
-In addition to using class inheritance (and mixing modules) to implement polymorphism, we can also achieve polymorphism through <b>duck typing</b>. Duck typing occurs when objects of different <u>unrelated</u> types both respond to the same method name. With duck typing, we aren't concerned with the class or type of an object, but we do care whether an object has a particular behavior. If an object quacks like a duck, then we can treat it as a duck. Specifically, duck typing is a type of polymorphism as long as the objects involved use the same method name and take the same number of arguments, we can treat the object as belonging to a specific category of objects. EX:
+In the above example we have three unrelated classes: `Mountain`, `Tree`, and `Ladder`. Because they are all unrelated but have the same behavior, we can mix in the behavior via a module. The `Climbable` module gives classes the ability to climb through it's `climb` instance method. By including this module in all three classes, all instances of these classes can invoke the same `Climbable#climb` instance method.
 
 ```ruby
-class Wedding
-  attr_reader :guests, :flowers, :songs
-  
-  def prepare(preparers)
-    preparers.each do |preparer|
-      preparer.prepar_wedding(self)
-    end
+# duck typing
+class SavingsAccount
+  def initialize(account_number, balance)
+    @account_number = account_number
+    @balance = balance
+  end
+
+  def check_balance
+    "Savings account #{@account_number} has a balance of $#{@balance}."
   end
 end
 
-class Chef
-  def prepare_wedding(wedding)
-    prepare_food(wedding.guests)
+class CreditCard
+  def initialize(card_number, balance)
+    @card_number = card_number
+    @balance = balance
   end
-  
-  def prepare_food(guests)
-    #implementation
+
+  def last_four_digits
+    @card_number.digits[0, 4].reverse.join.to_i
+  end
+
+  def check_balance
+    "You currently owe $#{@balance} on credit card ending in #{last_four_digits}."
   end
 end
 
-class Decorator
-  def prepare_wedding(wedding)
-    decorate_place(wedding_flowers)
+class CarLoan
+  def initialize(make, model, balance)
+    @make = make
+    @model = model
+    @balance = balance
   end
-  
-  def decorate_place(flowers)
-    #implementation
+
+  def check_balance
+    "Your #{@make} #{@model} has a remaining balance of $#{@balance}."
   end
 end
 
-class Musician
-  def prepare_wedding(wedding)
-    prepare_performance(wedding.songs)
-  end
-  
-  def prepare_performance(songs)
-    #implementation
-  end
+my_savings = SavingsAccount.new(123456, 500)
+my_credit_card = CreditCard.new(123456789, 250)
+my_chevy_loan = CarLoan.new('Cheverolet', 'Suburban', 12_345)
+
+my_accounts = [my_savings, my_credit_card, my_chevy_loan]
+
+my_accounts.each do |account|
+  puts account.check_balance
 end
+
+# => "Savings account 123456 has a balance of $500."
+# => "You currently owe $250 on credit card ending in 6789."
+# => "Your Cheverolet Suburban has a remaining balance of $12345."
 ```
 
-Though there is no inheritance in the above example, each of the preparer-type classes provides a `prepare_wedding` method. We still have polymorphism since all of the objects respond to the `prepare_wedding` method call. If we later need to add another preparer type, we can create another class an implement the `prepare_wedding` method to perform the appropriate actions.
+In the above example we have three unrelated classes: `SavingsAccount`, `CreditCard`, `CarLoan`. Class inheritance doesn't make sense for these classes, and they use different implementations within their `check_balance` instance methods, so mixing in a module wouldn't work either. Leaving us with duck typing as a good choice to implement polymorphism here. Because `SavingsAccount#check_balance`, `CreditCard#check_balance`, and `CarLoan#check_balance` all are invoked on instances of their classes without an argument, we are able to invoke them all together. 
 
-<I>Note that merely having two different objects that have a method with the same name and compatible arguments doesn't mean that you have polymorphism. In theory, those methods might be used polymorphically, but that doesn't always make sense. Unless you're actually calling the method in a polymorphic manner, you don't have polymorphism.</I>
+We then create an Array of objects from these three classes. We then invoke `Array#each` on this array and invoke the `check_balance` instance method on each instance, referenced by the `account` block variable. This invokes each class' `check_balance` instance method, and the return value is then output by the `puts` method, resulting in the above output.
+
+<I>Note: merely having two different objects that have a method with the same name and compatible arguments doesn't mean that you have polymorphism. In theory, those methods might be used polymorphically, but that doesn't always make sense. Unless you're actually calling the method in a polymorphic manner, you don't have polymorphism.</I>
 
 <h2>Modules</h2>
 
