@@ -312,139 +312,158 @@ In the above example we have a class method called `total_students` within the `
 
 <h2>Method Access Control</h2>
 
-====================
+Method access control is how Ruby allows us to either grant or restrict access to methods within classes. We can do this by defining our methods as `public`, `private`, or `protected`. 
 
-Access control is a concept that exits in a number of programming languages, including Ruby. It is generally implemented through the use of <i>access modifiers</i>. The purpose of access modifiers is to allow or restrict access to a particular thing. In Ruby, the things that we are concerned with restricting access to are the methods defined in a class. In a Ruby context, therefore, you'll commonly see this concept referred to as <b>method access control</b>. 
-
-The way that Method Access Control is implemented in Ruby is through the use of the `public`, `private`, and `protected` access modifiers. A `public` method is a method that is available to anyone who knows either the class name or the object's name. These methods are readily available for the rest of the program to use and comprise the class's <I>interface</I> (that's how other classes and objects will interact with this class and its objects).
-
-Sometimes you'll have methods that are doing work in the class but don't need to be available to the rest of the program. These methods can be defined as `private`. `private` methods are only accessible from other methods in the class. In other words, `private` methods are not accessible outside of the class definition at all, and are only accessible from inside the class when called without `self`.
-
-<I>Note: As of Ruby 2.7, it is now legal to call private methods with a literal `self` as the caller. Note that this does <b>not</b> mean that we can call a private method with any other object, not even one of the same type. We can only call a private method with the current object</I>.
-
-`public` and `private` methods are most common, but in some less common situations, we'll want an in-between approach. For this, we can use the `protected` method to create protected methods. Protected methods are similar to private methods in that they cannot be invoked outside the class. The main difference between them is that protected methods allow access between class instances, while `private` methods do not. EX:
+* Public: public methods are methods that are available to any object of that class, to be invoked from outside of the class. Creating public methods is how we give objects behaviors. Without a public method, an object would not have any sort of functionality.
+* Private: private methods are methods that are not accessible to be invoked outside of the class. They must be invoked from another method within the same class, and they can only be invoked on the calling object. Creating private methods is how we are able to limit access to sensitive information that we may not want accessible.
+* Protected: protected methods are similar to private methods. These methods are also not accessible to be invoked outside of the class, and must be invoked from another method within the same class. They are different in that they allow us to invoke protected methods on other instances of the same class. Creating protected methods allows us to limit access to sensitive information, while still allowing interaction between objects of the same class.
 
 ```ruby
 class Person
+  attr_reader :name # public getter method for `@name`
+  
   def initialize(name, age, dob)
     @name = name
     @age = age
     @dob = dob
   end
-
-  def older?(other_person)	# public method
-    age > other_person.age  # calling protected method for `self` and `other_person`
+  
+  def older_than?(other_person) # public method
+    age > other_person.age # invoking protected `age` method on calling object and `other_person`
   end
   
-   def born_first?(other_person) # public method
-    dob[2] < other_person.dob[2] # calling private method for `self` and `other_person`
+  def birthyear # public method
+    dob.strftime('%Y') # invoking private `dob` method on calling object
   end
-
-  def public_disclosure	# public method
-    "#{@name} was born in #{dob[2]}" # calling private method
-  end
-
+  
   protected
-
-  attr_reader :age	# protected method
-
-  private 
-
-  attr_reader :dob	# private method
+  
+  attr_reader :age # protected getter method for `@age`
+  
+  private
+  
+  attr_reader :dob # private getter method for `@dob`
 end
 
-alyssa = Person.new('Alyssa', 34, [7, 14, 1989])
-rich = Person.new('Rich', 36, [3, 14, 1988])
+bob = Person.new('Robert', 24, Time.new(2000, 1, 15))
+joe = Person.new('Joseph', 40, Time.new(1984, 3, 1))
 
-alyssa.older?(rich) # => false => calling public method that calls protected method
-rich.older?(alyssa) # => true
+bob.name # => "Robert"
 
-alyssa.age # => NoMethodError: protected method `age` called for #<Person:0x000000010108b0b8 @name="Alyssa", @age=34>
+bob.age # => NoMethodError: protected method `age` called for #<Person>
+bob.dob # => NoMethodError: private method `dob` called for #<Person>
 
-alyssa.public_disclosure # => "Alyssa was born in 1989" => calling public method that calls private method
+bob.older_than?(joe) # => false
 
-alyssa.dob # => NoMethodError: private method `dob' called for #<Person:0x000000010621a938 @name="Alyssa", @age=34, @dob=[7, 14, 1989]>
+# if we create a new class that also has a protected `age` method and try to pass it as the argument into the `Person#older_than?` method:
 
-alyssa.born_first?(rich) # => NoMethodError: private method `dob' called for #<Person:0x000000010539a7a0 @name="Rich", @age=36, @dob=[3, 14, 1988]>
+class Dog
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+  
+  protected
+  
+  attr_reader :age # protected getter method for `@age`
+end
+
+fido = Dog.new('Fido', 4)
+
+bob.older_than?(fido) # => NoMethodError: protected method `age` called for #<Dog>
 ```
 
-In the above example, we can see that Ruby allows us to call `protected` and `private` methods on the current object from within a public method inside of a custom class, however if we try to call those `protected` and `private` methods from outside of the class we see a `NoMethodError` exception. We can also see that when we call a `protected` method not just on the current object, but on an instance of the same class, we are able to access that method; as in the `born_first?` Instance method definition. However, if we try to access a `private` method on another instance of the same class, like in the `born_first?` instance method, we are unable to access that information and instead see a `NoMethodError` exception.
+In the above example we have a class called `Person` that has:
+
+* Three public methods:  `name`, `older_than?`, and `birthyear`. All three of these methods can be invoked by an instance of the `Person` class from outside of the class.
+* One protected method:  `age`, which is a getter method for the instance variable `@age`. When we try to invoke this method on an instance of the `Person` class from outside of the class we get a `NoMethodError` exception because protected methods cannot be invoked from outside of the class. However, when we invoke the protected `age` method from within the `Person#older_than?` method and pass in another `Person` instance as the argument, we are able to invoke the `age` method on both objects, which in turn will return the value their `@age` instance variables are referencing. Which then evaluates if the values represented by the calling object's `@age` is greater than the arguments `@age`, then returning either `true` or `false`. 
+* One private method: `dob` which is a getter method for the instance variable `@dob`. When we try to invoke this method on an instance of the `Person` class from outside of the class we get a `NoMethodError` exception because private methods cannot be invoked from outside of the class. However, within the `Person#birthyear` method, we are able to invoke the `dob` method on the calling object, which in this case will return the instances birthyear in String format.
+
+Finally, to demonstrate how protected methods cannot invoke an instance of another classes protected method with the same name, we have a new class called `Dog` that also has a protected `age` instance method. When we pass in an instance of the `Dog` class as an argument to the `Person#older_than?` method invocation, we get a `NoMethodError` exception because we are trying to invoke a protected method `age` for the `Dog` object.
 
 <h2>Class Inheritance</h2>
 
-Inheritance (a way to achieve polymorphism) in Ruby is where a class inherits the behaviors from another class, referred to as the <b>superclass</b>. This give Ruby programmers the power to define basic classes with large reusability and smaller <b>subclasses</b> for more fine-grained, detailed behaviors. We can allow a class to inherit from another class when defining the subclass we include the `<` symbol to signify that the current class will inherit from the class to the right of the `<` symbol. This means that all of the method in the `Animal` class are available to the `Dog`, `Cat`, and `Fish` classes to use. EX:
+Class inheritance in OOP and Ruby is the mechanism that allows a class to inherit behaviors and attributes from another class. The class that passes on its behaviors is called the "superclass", and the class that inherits those behaviors is called the "subclass". When defining a class to subclass another, the subclass will have access to the superclass' methods and attributes. This creates a hierarchical relationship between classes, where the subclass can also have additional behaviors and attributes, or override existing ones from the superclass. Class inheritance is a way to achieve polymorphism as well as keep from repeating code throughtout our program.
+
+When using class inheritance, there are some factors to consider:
+
+* A class can only subclass from one superclass (single inheritance).
+* When a superclass contains a class variable, that class variable is shared amongst the class and all of its subclasses. This means it could easily be modified without meaning to.
+* When resolving a method invocation, Ruby searches the current class first and then will travel up the method lookup path if the method is not found within the current class. This means that if a method is invoked on a subclass, Ruby first searches the subclass before searching the superclass for the method. It's important to know a class' method lookup path to prevent accidental method invocation. To find a class' method lookup path you can invoke `#ancestors` directly on the class in question.
+* To invoke a superclass' method within the subclass, you can use the `super` keyword within the method definition of a method of the same name. If that superclass' method is invoked with arguments they either need to be the same as the method defined within the subclass, or specified when invoking.
+* If there's an "is-a" relationship, class inheritance is usually the correct choice. If there's a "has-a" relationship, interface inheritance is generally a better choice. For example, a truck "is a" vehicle and it "has an" ability to drive.
 
 ```ruby
-class Animal # superclass
-  def move
-    "I can move!"
+class MusicalInstrument
+  @@instrument_count = 0
+  attr_reader :type, :brand
+  
+  def initialize(brand)
+    @type = self.class.to_s.downcase
+    @brand = brand
+    @@instrument_count += 1
+  end
+  
+  def play
+    "Now playing a #{@brand} #{@type}."
+  end
+  
+  def self.total_number_of_instruments
+    @@instrument_count
   end
 end
 
-class Dog < Animal; end  # Dog subclass is inheriting from Animal superclass
-class Cat < Animal; end	 # Cat subclass is inheriting from Animal superclass
-class Fish < Animal; end # Fish subclass is inheriting from Animal superclass
+class Guitar < MusicalInstrument
+  STRINGS = 6
+end
 
-puts Dog.new.move  # => I can move
-puts Cat.new.move  # => I can move
-puts Fish.new.move # => I can move
+class Ukulele < Guitar
+  STRINGS = 4
+end
+
+class Musician
+  def initialize(name)
+    @name = name
+  end
+  
+  def play(instrument)
+    "#{@name} is playing a #{instrument.brand} #{instrument.type}."
+  end
+end
+
+MusicalInstrument.total_number_of_instruments # => 0
+
+guitar = Guitar.new('Fender')
+
+MusicalInstrument.total_number_of_instruments # => 1
+
+ukulele = Ukulele.new('Kamaka')
+
+MusicalInstrument.total_number_of_instruments # => 2
+Ukulele.total_number_of_instruments # => 2
+
+Guitar::STRINGS # => 6
+Ukulele::STRINGS # => 4
+
+bono = Musician.new('Bono')
+
+guitar.play # => "Now playing a Fender guitar."
+ukulele.play # => "Now playing a Kamaka ukulele."
+
+bono.play(guitar) # => "Bono is playing a Fender guitar."
+bono.play(ukulele)# => "Bono is playing a Kamaka ukulele."
+
+Ukulele.ancestors # => [Ukulele, Guitar, MusicalInstrument...]
+Guitar.ancestors # => [Guitar, MusicalInstrument, Object...]
+MusicalInstrument.ancestors # => [MusicalInstrument, Object...]
 ```
 
-When dealing with inheritance, it is important to remember that methods can be overridden. EX:
+In the above example we have four classes:
 
-```ruby
-class Animal # superclass
-  def move
-    "I can move"
-  end
-end
-
-class Dog < Animal; end  # subclass
-class Cat < Animal; end	 # subclass
-class Fish < Animal			 # subclass
-  def move
-    "I can swim"
-  end
-end
-
-puts Dog.new.move  # => I can move
-puts Cat.new.move  # => I can move
-puts Fish.new.move # => I can swim
-```
-
-Above we have defined a `move` method within the `Fish` class which will override the inherited `move` method from within the `Animal` superclass. This happens because Ruby's <b>method lookup path</b> first searches the objects current class then continues up to path until the method is found and can be resolved. Another functionality of class inheritance is the use of the `super` keyword. Ruby provides us with the `super` keyword to call methods earlier in the method lookup path. When you call `super` from within a method, it searches the method lookup path for a method with the same name, then invokes it. EX:
-
-```ruby
-class Animal # superclass
-  def move
-    "I can move"
-  end
-end
-
-class Dog < Animal; end  # subclass
-class Cat < Animal; end	 # subclass
-class Fish < Animal			 # subclass
-  def move
-    super + " by swimming"
-  end
-end
-
-puts Dog.new.move  # => I can move
-puts Cat.new.move  # => I can move
-puts Fish.new.move # => I can move by swimming
-```
-
-A common use of using `super` would be with the `initialize` method. 
-
-<i>Note: when `super` is used and arguments are required, it adds a twist to how `super` is invoked. When invoked with no arguments, `super` automatically forwards the arguments that were passed to the method from which `super` is called. If the current method accepts arguments, but the `super` method does not, you must invoke `super` specifically with no arguments: `super()`. If the arguments for the `super` method invocation are different from the current method's arguments, you must specific that as well.</i>
-
-One of the limitations of class inheritance in Ruby is that a class can only directly sub-class from one superclass. We call this <b>single inheritance</b>. When we want to allow classes to inherit from multiple classes, a funtionality known as multiple inheritance, the answer is to mix in behaviors with modules. A class can only sub-class from one parent, but it can mix in as many modules (interface inheritance) as it likes. However, it is important to remember that mixing in modules does affect the method lookup path.
-
-A couple things to consider when evaluating whether to use class inheritance vs interface inheritance are:
-
-* As stated above, a class can only subclass (class inheritance) from one class. You can mix in as many modules (interface inheritance) as you'd like.
-* If there's an "is-a" relationship, class inheritance is usually the correct choice. If there's a "has-a" relationship, interface inheritance is generally a better choice. For example, a dog "is an" animal and it "has an" ability to swim.
-* You cannot instantiate modules. In other words, objects cannot be created from modules.
+* `MusicalInstrument` : The `MusicalInstrument` class is the superclass of the `Guitar` class. It contains a class variable called `@@instrument_count` that will be shared between it's own class as well as any subclasses. This class has a `play` instance method that returns a String object describing what brand and type of instrument is currently playing. The `MusicalInstrument#play` method is inherited by subclasses `Guitar` and `Ukulele`.
+* `Guitar` : The `Guitar` class is the subclass of the `MusicalInstrument` class, and the superclass of the `Ukulele` class. Which means that the `Guitar` class will inherit the behaviors and attributes of the `MusicalInstrument` class, and pass along these and it's own behaviors and attributes on to the `Ukulele` class. Within the `Guitar` class definition we have a constant variable called `STRINGS` that references the Integer `6`. 
+* `Ukulele` : The `Ukulele` class is the subclass of the `Guitar` class, which inherits from the `MusicalInstrument` class. This means the `Ukulele` class' inheritance hierarchy is : `Ukulele`, `Guitar`, `MusicalInstrument`, `Object`, and so on. This means the `Ukulele` class will inherit the behaviors and attributes of the `Guitar` and `MusicalInstrument` class. Because of this, we have created a constant called `STRINGS` within the `Ukulele` class that references the Integer `4`, so that if the `Ukulele` class references the constant `STRINGS` it will return `4` instead of `6`.
+* `Musician` : The `Musician` class is a class unrelated to the others so it is not part of the other class' inheritance hierarchy. This class also has a `play` instance method that, like the `MusicalInstrument` class, returns a String object describing what brand and type of instrument is being play, as well as who is playing it. Although the `Musician` class is unrelated in an inheritance hierarchy manner, the object passed into the `Musician#play` instance method, referenced by the `instrument` method variable, is considered a collaborator object.
 
 <h2>Encapsulation</h2>
 
