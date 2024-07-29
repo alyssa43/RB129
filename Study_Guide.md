@@ -628,224 +628,256 @@ In the above example we have three unrelated classes: `SavingsAccount`, `CreditC
 
 We then create an Array of objects from these three classes. We then invoke `Array#each` on this array and invoke the `check_balance` instance method on each instance, referenced by the `account` block variable. This invokes each class' `check_balance` instance method, and the return value is then output by the `puts` method, resulting in the above output.
 
-<I>Note: merely having two different objects that have a method with the same name and compatible arguments doesn't mean that you have polymorphism. In theory, those methods might be used polymorphically, but that doesn't always make sense. Unless you're actually calling the method in a polymorphic manner, you don't have polymorphism.</I>
+<I>Note from LS material: merely having two different objects that have a method with the same name and compatible arguments doesn't mean that you have polymorphism. In theory, those methods might be used polymorphically, but that doesn't always make sense. Unless you're actually calling the method in a polymorphic manner, you don't have polymorphism.</I>
 
 <h2>Modules</h2>
 
-Modules are one way to achieve polymorphism and to keep code DRY. A module is a collection of behaviors that are usable in other classes via <b>mixins</b>. A module is "mixed in" to a class by using the `include` method invocation.
+A module is a set of behaviors and/or state that is grouped together an can be included into classes through "mixing in". Modules allow for the sharing of resuable code across multiple classes without using class inheritance. By using modules, also known as "interface inheritance", it keeps our code DRY. To mix a module into a class we use the `include` method invocation, and pass it the name of the module you wish to mix in as the arugment. 
 
 ```ruby
-module Swimmable
-  def swim
-    "I'm swimming"
+module Climbable
+  def climb 
+    "Climbing a #{self.class}."
   end
 end
 
-class Animal; end
-
-class Dog < Animal
-  include Swimmable
+class Mountain
+  include Climbable
 end
 
-class Fish < Animal
-  include Swimmable
+class Tree
+  include Climbable
 end
 
-class Cat < Animal; end
+class Ladder
+  include Climbable
+end
 
-puts Dog.new.swim  # => I'm swimming
-puts Fish.new.swim # => I'm swimming
-puts Cat.new.swim  # => NoMethodError
+mt_hood = Mountain.new
+pine_tree = Tree.new
+step_stool = Ladder.new
+
+p mt_hood.climb # => "Climbing a Mountain."
+p pine_tree.climb # => "Climbing a Tree."
+p step_stool.climb # => "Climbing a Ladder."
 ```
 
-Mixing in modules to a class is sometimes known as <b>interface inheritance</b>. The class doesn't inherit from another class, but instead inherits the interface provided by the mixin module.
+In the above example, we have used the `include` method invocation to mix in the `Climbable` module into the classes `Mountain`, `Tree`, and `Ladder`. Now, any instances of these three classes will have the ability to invoke the `climb` instance method.
 
-A common naming convention for naming modules in Ruby is to use the "able" suffix on whatever verb describes the behavior that the module is modeling.
-
-Another concept related to modules is <b>namespacing</b>. Namespacing is when we organize smiliar classes under a module. In other words, we can use modules to group related classes together. Some advantages of namespacing are that it makes it easy to recognize related classes in our code as well as it reduces the likelihood of our classes colliding with other similarly named classes in our codebase. EX:
+It is important to remember how mixing in a module into a class will affect that classes method lookup path. When resolving a method invocation Ruby first searches the current class (the calling object's class), and if not found within the current class Ruby then continues on the method lookup path. Next, Ruby searches any modules that are mixed in, starting with the last module to be mixed in and ending with the first module mixed in. After searching modules, Ruby then continues up the method lookup path and searches any superclasses. EX:
 
 ```ruby
-module Animal
-  class Dog
-    def speak(sound)
-      "#{sound}"
-    end
-  end
-  
-  class Cat
-    def say_name(name)
-      "#{name}"
-    end
+module Pushable
+  def push 
+    "pushing a #{self.class}."
   end
 end
 
-# we call classes in a module by appending the class name to the module name with two colons (::) (method/constant resolution operator)
+module Pullable
+  def pull 
+    "pulling a #{self.class}."
+  end
+end
 
-buddy = Animal::Dog.new
-kitty = Animal::Cat.new
-buddy.speak('Arf!')     # => "Arf!"
-kitty.say_name('Kitty') # => "Kitty"
+module Driveable
+  def drive 
+    "driving a #{self.class}."
+  end
+end
+
+class Vehicle
+  def drive
+    "Vrooommm...driving."
+  end
+end
+
+class GolfCart < Vehicle
+  include Pushable
+  include Driveable
+end
+
+class Wagon
+  include Pushable
+  include Pullable
+end
+
+GolfCart.ancestors # => [GolfCart, Driveable, Pushable, Vehicle, Object, Kernel, BasicObject]
+Wagon.ancestors # => [Wagon, Pullable, Pushable, Object, Kernel, BasicObject]
+
+GolfCart.new.drive # => "driving a GolfCart."
 ```
 
-Another use case for modules is using modules as a <b>container</b> for methods, called module methods, that seem out of place within your code. This involves using modules to house other methods. EX:
+In the above example we have three modules (`Pushable`, `Pullable`, and `Driveable`) and three classes (`Vehicle`, `GolfCart`, and `Wagon`). The `GolfCart` class subclasses the `Vehicle` class and has the modules `Pushable` and `Driveable` mixed in. This means any instance of the `GolfCart` class has a method lookup path of first the current `GolfCart` class, then the modules `Driveable` and then `Pushable`, then the superclass `Vehicle`, and so on. Because of this, when we invoke the `drive` instance method on an instance of the `GolfCart` class, Ruby finds and invokes the `Drivable#drive` instance method, never making it to the `Vehicle#drive` instance method.
+
+Another use case of modules is for a technique called "namespacing". Namespacing is when you use a module to hold and organize classes that are similar. Using namespacing can help with organizing related classes and keep them from interfering with each other accidentally. 
 
 ```ruby
-module Animal
-  # ... resot of code omitted for brevity
-  
-  def self.some_out_of_place_method(num)
-    num ** 2
+# namespacing
+module Employee
+  class Waitress
+    def take_order
+      "taking a customers order"
+    end
+  end
+
+  class Chef
+    def plate_food
+      "plating a meal"
+    end
+  end
+
+  class Manager
+    def field_complaint
+      "documenting a customer's complaint"
+    end
   end
 end
 
-value = Animal.some_out_of_place_method(4) # preferred way
-# or
-value = Animal::some_out_of_place_method(4)
+waitress_alice = Employee::Waitress.new
+chef_bob = Employee::Chef.new
+manager_alan = Employee::Manager.new
+
+p waitress_alice.take_order # => "taking a customers order"
+p chef_bob.plate_food # => "plating a meal"
+p manager_alan.field_complaint # => "documenting a customer's complaint"
+```
+
+When referencing a class within a module we use the scope resolution operator (`::`). First we put the module name, followed by the scope resultion operator, and finally the class name we wish to reference. This tells Ruby that we want to look within the module, then within the class. 
+
+We can also use modules to act as a container that hold out of place method (think of module methods as being similar to a class method). Like class methods, they are prefixed with `self.`, and are called directly on the module itself. EX:
+
+```ruby
+module Employee
+  # ... rest of code ommitted for brevity
+  
+  def self.module_method
+    "This is a module method"
+  end
+end
+
+Employee.module_method # => "This is a module method"
 ```
 
 <h2>Method Lookup Path</h2>
 
-The method lookup path is the path that Ruby takes when resolving a method invocation. Ruby will follow this distint path each time a method is invoked. To see the method lookup path for an object we can invoke the `#ancestors` method on that object. EX:
-
-```ruby
-class Animal; end
-class Dog < Animal; end
-
-Animal.ancestors # => [Animal, Object, Kernel, BasicObject]
-Dog.ancestors 	 # => [Dog, Animal, Object, Kernel, BasicObject]
-```
-
-This means that when a method is invoked on an object of the `Dog` class, Ruby first searches within the `Dog` class, then travels up to the `Animal` class, and so on until the method is found, or if there is no method found within the method lookup path you will receive a `NoMethodError` exception.
-
- It is important to remember that mixing in modules does affect the method lookup path. EX:
+The method lookup path is the path that Ruby travels when resolving a method invocation. First, Ruby searches the calling object's class to try to resolve the method invocation. If the method invocation is not able to be resolved from the current class, Ruby then goes up the method lookup path, to the next class or module until it can be resolved. If Ruby searches the entire method lookup path and still cannot resolve the method invocation then you will receive a `NoMethodError` exception. To find a class' method lookup path, you can invoke the `ancestors` method directly on the class.
 
 ```ruby
 module Walkable
   def walk
-    "I'm walking"
+    "walking"
   end
 end
 
-module Swimmable
-  def swim
-    "I'm swimming"
+module Cleanable
+  def clean
+    "cleaning"
   end
 end
 
-module Climable
-  def climb
-    "I'm climbing"
+module Tippable
+  def collect_tip
+    "you received a tip"
   end
 end
 
-class Animal
-  include Walkable
+class Person
+	include Walkable
 end
 
-class Dog < Animal
-  include Swimmable
-  include Climbable
+class Employee < Person; end
+
+class HouseKeeper < Employee
+	include Cleanable
+  include Tippable
 end
 
-Animal.ancestors # => [Animal, Walkable, Object, Kernel, BasicObject]
-Dog.ancestors # => [Dog, Climbalbe, Swimable, Animal, Walkable, Object, Kernel, BasicObject]
-  
+HouseKeeper.ancestors # => [HouseKeeper, Tippable, Cleanable, Employee, Person, Walkable, Object...]
 ```
 
-We can see by this example, that the order in which we `include` modules within a class is important. For our `Dog` class method lookup path, Ruby first searches the `Dog` class, then searches the `Climbable` module, and then the `Swimable` module. We can see from this that Ruby will search the current class, then any mixed in modules starting with the last module included working its way up to the first module included. We can also see by this example that Ruby then searches the superclass `Animal` and then it's mixed in module `Walkable`. This is very important to remember in case there are method's within mixed in modules that have the same method name.
+This example demonstrates the lookup path for the `HouseKeeper` class. When an instance method is invoked on an instance of the `HouseKeeper` class, Ruby will first search the current `HouseKeeper` class. Next, Ruby moves onto the included modules starting at the last included module and finishing at the first included module, meaning that Ruby will search the `Tippable` module and then the `Cleanable` module. Next Ruby will search `HouseKeeper`'s superclass, the `Employee` class. From there Ruby will search the `Employee` class' superclass, the `Person` class. Next, Ruby will search the module included within the `Person` class, the `Walkable` module. Finally Ruby continues on to search the built-in classes `Object`, then `Kernel` and then finally `BasicObject`. It is important to know a method's lookup path because you could easily invoke a method with a same name if you are unaware of the path Ruby will travel when resolving that method.
 
 <h2>Method Overriding</h2>
 
-Because of the way Ruby's method lookup path searches when resolving a method invocation; we are given the ability to override methods in other classes. One example of this is when working with sub-classes and superclasses. If you have a sub-class that inherits a `move` method from it's parent, but you do not want to use that inherited `move` method; you can write your own `move` method from within the sub-class. EX:
+When dealing with class inheritance, it is possible for a subclass to inherit behaviors that might not be appropriate for the subclass. In this instance, method overriding would be a good idea. To override a method that has been inherited from a superclass, you simply define that method with the same exact name from within the subclass. 
 
 ```ruby
-class Animal # superclass
-  def move
-    "I can move"
+class Fish
+  def swim
+    "I'm a fish, of course I can swim!"
   end
 end
 
-class Dog < Animal; end  # subclass
-class Cat < Animal; end	 # subclass
-class Fish < Animal			 # subclass
-  def move
-    "I can swim"	# This method definition overrides the one in the Animal class
-  end
-end
+class Batfish < Fish; end
 
-puts Dog.new.move  # => I can move
-puts Cat.new.move  # => I can move
-puts Fish.new.move # => I can swim
+batty = Batfish.new
+batty.swim # => "I'm a fish, of course I can swim!"
 ```
 
-Because every class you create inherently subclasses from the `Object` class, and the `Object` class is built into Ruby and comes with many critical methods, it's possible to accidentally override important methods that you may need and do not intend to override. For example, `send` is an instance method that all classes inherit from `Object`. If you defined a new `send` instance method in your class, all objects of your class will call your custom `send` method, instead of the one in class `Object`, which is probably the one they mean to call. (`Object#send` serves as a way to call a method by passing it a symbol or a string which represents the method you want to call.) EX:
+In the above example, the `Batfish` class inherits the `swim` instance method from the `Fish` class. However, because batfish do not actually swim, this instance method is not appropriate for the `Batfish` class. To prevent this instance method from being invoked we can override it by defining our own `swim` instance method within the `Batfish` class:
 
 ```ruby
-class Parent
-  def say_hi
-    "Hi from Parent"
+class Fish
+  def swim
+    "I'm a fish, of course I can swim!"
   end
 end
 
-class Child < Parent
-  def say_hi
-    "Hi from Child"
-  end
-  
-  def send
-    "send from Child..."
+class Batfish < Fish
+  def swim
+    "I'm a fish, but I can't swim! I use my fins to walk across the ocean floor."
   end
 end
 
-Parent.new.send :say_hi # => "Hi from Parent"
-Child.new.send :say_hi # => wrong number of arguments (given 1, expected 0) (ArgumentError)
+batty = Batfish.new
+batty.swim # => "I'm a fish, but I can't swim! I use my fins to walk across the ocean floor."
 ```
 
-Although, accidently overriding built-in methods is important to keep in mind; we can also use this to our advantage by purposely overriding built-in methods. One very common method which is frequently overriden on purpose is the `#to_s` method. This is useful to us when we want to have a specific output when invoking `#puts` on an object that is an instance of one of our classes. Calling `#puts` automatically calls `#to_s` on it's argument. EX:
+Now when we invoke the `swim` method on an instance of the `Batfish` class, the `Batfish#swim` instance method will be invoked and not the `Fish#swim` instance method.
+
+Method overriding can be very useful, however because any custom class we create subclasses the `Object` class, and the `Object` class has many important methods, it is possible to accidentally override an important method that you did not intend to. One commonly accidentally overridden method is the `Object#send` method (`Object#send` invokes the method passed to it as a symbol). 
+
+It is important to try not to accidentally override a built-in method, however we can also purposely override built-in methods. One very commonly overridden built-in method is the `Object#to_s` method. The reason for overriding this method would be so that when we invoke the `puts` method on an instance of our custom class, we get the output we want and not the (many characters long) string representation of that object that contains an encoding of it's object id. This works because of the implementation of the `Kernel#puts` method. When `puts` is invoked, Ruby automatically invokes the `to_s` method on the argument passed to it, and then it outputs that string representation of that argument. 
 
 ```ruby
-class Dog
+# without overriding `to_s`
+class Person
   def initialize(name)
     @name = name
   end
 end
 
-sparky = Dog.new('Sparky')
-puts sparky # => #<Dog:0x000000010a09f9b0>
+bob = Person.new('Robert')
+puts bob # => <#Person:0x000000010523bd50>
 ```
 
-Here when we invoke `#puts` on our `sparky` object we see an output of a string representation of our object. If we wanted to be able to see a specific output when invoking `#puts` on an object of our class we can override the `#to_s` method by defining our own `to_s` instance method within our class. EX:
-
 ```ruby
-class Dog
+# with overriding `to_s`
+class Person
   def initialize(name)
     @name = name
   end
-  
+
   def to_s
-    "This dog's name is #{@name}"
+    "Hi, my name is #{@name}."
   end
 end
 
-sparky = Dog.new('Sparky')
-puts sparky # => This dog's name is Sparky
+bob = Person.new('Robert')
+puts bob # => Hi, my name is Robert.
 ```
 
-When overriding `#to_s` within a custom class, you <b>must</b> remember that Ruby expects `#to_s` to always return a string. If your custom `#to_s` method does not return a string, it will not work as expected in places where `#to_s` is implicitly invoked like `#puts` and string interpolation. Instead of printing (or inserting) the value returned by `#to_s`, Ruby will ignore the non-string value and look in the inheritance chain for another version of the `#to_s` that does return a string. In most cases, it will use the value returned by `Object#to_s` instead. EX:
+In the first example, it demonstrates how when we invoke `puts` on our `Person` object `bob`, the output is the string representation of the object that includes an encoding of it's obejct id.
 
-```ruby
-class Foo
-  def to_s
-    42
-  end
-end
+In the last example, it demonstrates how when we define our own `to_s` method within the `Person` class, and invoke the `puts` method on `Person` object `bob`, the `Person#to_s` instance method is invoked and returned to the `puts` method invocation, which then outputs  `Hi, my name is Robert.`.
 
-foo = Foo.new
-puts foo							# => #<Foo:0x000000010335fa08>
-puts "foo is #{foo}"	# => foo is #<Foo:0x000000010335fa08>
-```
+The reason this happens is because of the method lookup path. The `Person` class has a method lookup path of `Person`, `Object`, `Kernel`, and then `BasicObject`. So when `puts` is invoked and passed the `Person` object `bob` as the argument, Ruby then automatically invokes `to_s` method on `bob`. Which means that Ruby will first search the `Person` class to resolve the `to_s` method invocation, if not found there then Ruby will search the next class up; the `Object` class, which will invoke the `Object#to_s` method. So the first example `Object#to_s` is being invoked while the second example is invoking the `Person#to_s` method.
 
-Other custom methods to be overridden within custom classes as those within the "fake operator" group (see below). 
+When overriding the `Object#to_s` method, it is important to remember that your custom `to_s` method must return a string or it will not work for methods that implicitly invoke the `to_s` method like the `puts` method. If your custom class' `to_s` instance method does not return a string and you invoke `puts` on an instance of that custom class, Ruby will see the returned value and ignore it and move onto the next class of the method lookup path. 
+
+Other custom methods to be overridden within custom classes are those within the "fake operator" group (see below).
+
+=================
 
 <h2>self</h2>
 
