@@ -869,17 +869,56 @@ puts bob # => Hi, my name is Robert.
 
 In the first example, it demonstrates how when we invoke `puts` on our `Person` object `bob`, the output is the string representation of the object that includes an encoding of it's obejct id.
 
-In the last example, it demonstrates how when we define our own `to_s` method within the `Person` class, and invoke the `puts` method on `Person` object `bob`, the `Person#to_s` instance method is invoked and returned to the `puts` method invocation, which then outputs  `Hi, my name is Robert.`.
+In the last example, it demonstrates how when we define our own `to_s` method within the `Person` class, and invoke the `puts` method on our `Person` object `bob`, the `Person#to_s` instance method is invoked and returned to the `puts` method invocation, which then outputs  `Hi, my name is Robert.`.
 
-The reason this happens is because of the method lookup path. The `Person` class has a method lookup path of `Person`, `Object`, `Kernel`, and then `BasicObject`. So when `puts` is invoked and passed the `Person` object `bob` as the argument, Ruby then automatically invokes `to_s` method on `bob`. Which means that Ruby will first search the `Person` class to resolve the `to_s` method invocation, if not found there then Ruby will search the next class up; the `Object` class, which will invoke the `Object#to_s` method. So the first example `Object#to_s` is being invoked while the second example is invoking the `Person#to_s` method.
+The reason this happens is because of the method lookup path. The `Person` class has a method lookup path of `Person`, `Object`, `Kernel`, and then `BasicObject`. So when `puts` is invoked and passed the `Person` object `bob` as the argument, Ruby then automatically invokes the `to_s` method on `bob`. Which means that Ruby will first search the `Person` class to resolve the `to_s` method invocation, if not found there then Ruby will search the next class up; the `Object` class, which will invoke the `Object#to_s` method. So the first example `Object#to_s` is being invoked while the second example is invoking the `Person#to_s` method.
 
 When overriding the `Object#to_s` method, it is important to remember that your custom `to_s` method must return a string or it will not work for methods that implicitly invoke the `to_s` method like the `puts` method. If your custom class' `to_s` instance method does not return a string and you invoke `puts` on an instance of that custom class, Ruby will see the returned value and ignore it and move onto the next class of the method lookup path. 
 
 Other custom methods to be overridden within custom classes are those within the "fake operator" group (see below).
 
-=================
-
 <h2>self</h2>
+
+What `self` references will depend on the scope in which it is used. 
+
+When `self` is scoped at the class level, meaning it is used inside of a class but outside of any instance methods, it is referencing the class it is located within. This is why when we define a class method, we prefix the method name with `self`, so that Ruby knows the class itself will be invoking this method and not an object instantiated from the class.
+
+```ruby
+class Person
+  def self.species
+    "Homo Sapien"
+  end
+end
+
+Person.species # => "Homo Sapien"
+```
+
+When `self` is scoped at the object level, meaning it is used inside of an instance method within a class, if references the calling object. Using `self` within an instance method is useful when we want to invoke a setter method instead of directly accessing the instance variable. To let Ruby know that we want to invoke a setter method and not just create a new local variable, we must prefix the setter method invocation with `self`.
+
+```ruby
+class Person
+  attr_accessor :age
+
+  def initialize(name, age)
+    @name = name
+    @age = age
+  end
+
+  def another_year_older
+    self.age += 1
+  end
+end
+
+bob = Person.new('Robert', 25)
+
+p bob.age # => 25
+bob.another_year_older
+p bob.age # => 26
+```
+
+
+
+=================
 
 `self` can refer to different things depends on where it is used. When `self` is referenced inside a class but outside of an instance method, it refers to the class itself:
 
