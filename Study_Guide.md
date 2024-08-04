@@ -632,7 +632,7 @@ We then create an Array of objects from these three classes. We then invoke `Arr
 
 <h2>Modules</h2>
 
-A module is a set of behaviors and/or state that is grouped together an can be included into classes through "mixing in". Modules allow for the sharing of resuable code across multiple classes without using class inheritance. By using modules, also known as "interface inheritance", it keeps our code DRY. To mix a module into a class we use the `include` method invocation, and pass it the name of the module you wish to mix in as the arugment. 
+A module is a set of behaviors that is grouped together an can be included into classes through "mixing in". Modules allow for the sharing of resuable code across multiple classes without using class inheritance. By using modules, also known as "interface inheritance", it keeps our code DRY. To mix a module into a class we use the `include` method invocation, and pass it the name of the module you wish to mix in as the arugment. 
 
 ```ruby
 module Climbable
@@ -893,7 +893,7 @@ end
 Person.species # => "Homo Sapien"
 ```
 
-When `self` is scoped at the object level, meaning it is used inside of an instance method within a class, if references the calling object. Using `self` within an instance method is useful when we want to invoke a setter method instead of directly accessing the instance variable. To let Ruby know that we want to invoke a setter method and not just create a new local variable, we must prefix the setter method invocation with `self`.
+When `self` is scoped at the object level, meaning it is used inside of an instance method within a class, it references the calling object. Using `self` within an instance method is useful when we want to invoke a setter method instead of directly accessing the instance variable. To let Ruby know that we want to invoke a setter method and not just create a new local variable, we must prefix the setter method invocation with `self`.
 
 ```ruby
 class Person
@@ -905,7 +905,7 @@ class Person
   end
 
   def another_year_older
-    self.age += 1
+    self.age = @age + 1
   end
 end
 
@@ -916,80 +916,113 @@ bob.another_year_older
 p bob.age # => 26
 ```
 
-
-
-=================
-
-`self` can refer to different things depends on where it is used. When `self` is referenced inside a class but outside of an instance method, it refers to the class itself:
+In the above example, we have an instance method called `another_year_older` within the `Person` class. Within this method definition, we use `self.` to invoke the `age=` setter method, which then reassigns the value of the `@age` instance variable by adding `1` to it's current value. If we leave the `self` off of the `age=` setter method invocation, Ruby thinks we are creating a new variable called `age` and therefore the `@age` instance variable does not get modified, like shown below:
 
 ```ruby
-class GoodDog
-  puts self # => GoodDog
-end
-```
+class Person
+  attr_accessor :age
 
-Therefore, a method definition prefixed with `self` is the same as defining the method on the class.
-
-```ruby
-class GoodDog
-  def self.a_method
-    # this is equivalent to ...
+  def initialize(name, age)
+    @name = name
+    @age = age
   end
-  
-  def GoodDog.a_method
-    # ... this
-  end
-end
-```
 
-That is why it's a class method; it's actually being defined on the class.
-
-When `self` is referenced from within an instance method inside of a class, it refers to <i>the calling object</i>. 
-
-```ruby
-class GoodDog
-  def what_is_self
-    self
+  def another_year_older
+    age = @age + 1
   end
 end
 
-sparky = GoodDog.new
-p sparky.what_is_self # => #<GoodDog:0x00000001125260f8>
+bob = Person.new('Robert', 25)
+
+p bob.age # => 25
+bob.another_year_older
+p bob.age # => 25
 ```
 
-In other words:
-
-```ruby
-class GoodDog
-  attr_accessor :name
-  
-  def initialize(name)
-    self.name = name # In this example self refers to the object sparky
-  end
-end
-
-sparky = GoodDog.new('Sparky')
-```
-
-In this example, `self.name =` acts the same as calling `sparky.name =` from outside of the class (but since we can't call `sparky.name = ` from inside the class because of scope). This is why using `self` to call instance methods from within the class works the way it does. 
+This demonstrates why we must use `self` to invoke any setter method within a class.
 
 <h2>Fake Operators and Equality</h2>
 
-`==` : At the object level (`BasicObject#==`), this method returns `true` only if the two objects being compared are the same object. This means that this implementation is the same as `BasicObject#equal?`. Because the default implementation for `BasicObject#==` is not very useful, we can override this method by defining our own `==` custom instance method within a custom class. (When you define a custom `==` instance method, you also get the `!=` method for free.)
+In Ruby, many of the things we might think of as "operators" are actually methods. Because of this, they are known as "fake operators". Because of Ruby's syntactical sugar, it may be hard to know what is an operator and what is a method, so it is important to try to remember these. The following are "fake operators" (methods) in order of highest precedence to lowest precedence:
 
+* `[]`, `[]=`: collection element getter and setter.
+* `**`: exponential operator
+* `!`, `~`, `+`, `-`: not, complement, unary plus and minus
+* `*`, `/`, `%`: multiply, divide, and modulo
+* `+`, `-`: plus, minus
+* `>>`, `<<`: right and left shift
+* `&`: bitwise "and"
+* `^`, `|`: bitwise exclusive "or" and regular (inclusive) "or"
+* `<=`, `<`, `>`, `>=`: less than/equal to, less than, greater than, greater than/equal to
+* `<=>`, `==`, `===`, `!=`, `=~`, `!~`: equality and pattern matching ( `!~` cannot be directly defined)
 
+Because Ruby allows for method overriding, and many of the operators in Ruby are actually methods, we can use that to our advantage to override the existing implementation of these methods by defining our own instance methods with our own implementation within our custom classes. For example, the `==` method checks for equality. When used at the object level, `BasicObject#==` is invoked:
 
-`equal?` : Compares two variables point to the same object.
+```ruby
+class Fruit
+  attr_reader :type
 
+  def initialize(type)
+    @type = type
+  end
+end
 
+banana = Fruit.new('banana')
+banana2 = Fruit.new('banana')
 
-`===` : used by `case` statements. Works by asking if the object being compared 'fits' within the group. For example, if we have ` (1..50) === 25` we are asking if 25 fits within a range of 1-50. Or, if we have `String === "hello"`, `true` would be returned. 
+banana == banana2 # => false
+```
 
- 
+In the above example, we have two instance of the `Fruit` class, `banana` and `banana2`. Both instances `@type` instance variable reference the string `'banana'`, however they are not the same object which is why when compared using the `BasicObject#==` method, `false` is returned. If we want `Fruit` objects to be considered equal based on their `@type` instance variable, we can override the `BasicObject#==` method:
 
-`eql?` : determines if two objects contain the same value and if they're of the same class.
+```ruby
+class Fruit
+  attr_reader :type
 
+  def initialize(type)
+    @type = type
+  end
 
+  def==(other)
+    type == other.type
+  end
+end
+
+banana = Fruit.new('banana')
+banana2 = Fruit.new('banana')
+
+banana == banana2 # => true
+```
+
+By defining our own `==` method within the `Fruit` class, Ruby has also automatically given us a `Fruit#!=` method, that returns `true` if the two `Fruit` objects `@type` instance variables do NOT reference the same value:
+
+```ruby
+class Fruit
+  attr_reader :type
+
+  def initialize(type)
+    @type = type
+  end
+end
+
+banana = Fruit.new('banana')
+strawberry = Fruit.new('strawberry')
+
+banana != strawberry # => true
+```
+
+Ruby also gives us other built-in equality methods; `equal?`, `===`, and `eql?`. The `equal?` method from the `BasicObject` class checks the objects identity and returns `true` if the objects being compared are the same object. However, unlike the `BasicObject#==` method, `BasicObject#equal?` should not be overridden because it is used to determine object identity. The next methods are less commonly used, but are also used for comparison.
+
+==== Not sure about below 
+
+ The `===` method is when is used in a `case` statement. It returns `true` if the calling object "fits" within the group passed in as an argument. EX:
+
+```ruby
+(1..50) === 25 # => true
+String === 'hello' # => true
+```
+
+ And, the `eql?` method returns `true` if the two objects being compared contain the same value AND if they are of the same class.
 
 <h2>Collaborator Objects</h2>
 
