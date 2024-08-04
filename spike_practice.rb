@@ -1,40 +1,21 @@
-module Describable
-  def describe_shape
-    "I am a #{self.class} and have #{SIDES} sides."
-  end
-end
+# Scenario 1: Online Learning Platform
+# there are students, courses, instructors, and an admin
+# students can enroll in courses and complete assignments
+# courses have a title, a list of students, and a list of assignments
+# instructors can create courses, assign homework, and grade assignments
+# assignments hace a title, description, and a grade
+# admin can manage users (students and instructors) and courses
+# use a module for grading assignments that can be mixed into both instructors and students
+# implement class inheritance so that instructors and students inherit from a user class
+# use collaborator objects to represent relationships between students, instructors, and courses
 
-class Shape
-  include Describable
-
-  def self.sides
-    self::SIDES
-  end
-  
-  def sides
-    self.class::SIDES
-  end
-end
-
-class Quadrilateral < Shape
-  SIDES = 4
-end
-
-class Square < Quadrilateral; end
-
-# Square.ancestors => [Square, Quadrilateral, Shape, Describable...]
-
-p Square.sides # => 4
-p Square.new.sides # => 4
-p Square.new.describe_shape # => NameError - uninitialized constant Describable::SIDES
-
-
-# What is output and why? What does this demonstrate about constant scope? What does `self` refer to in each of the 3 methods above? 
-
-=begin
-The outputs here will be `4`, `4`, and then a `NameError` exception. 
-
-The first output of `4` comes from line 27 where we invoke the class method `sides` on the `Square` class. Because we are invoking the `sides` method directly on the class itself that is why it's invoking a class method. Ruby first searches within the `Square` class for this class method, which it does not find there. Ruby then goes up the lookup chain to the `Quadrilateral` class, which it does not find there either. Ruby then continues up the lookup chain to the `Shape` class, where it does find the `self.sides` class method to invoke. Within the `self.sides` class method we reference `self`, which in this instance is the class `Square`, then we use the scope resolution operator `::` and the constant `SIDES` to tell Ruby we want to reference the constant `SIDES` within the `Square` class. Ruby then searches within the `Square` class for the constant `SIDES`, but does not find it there. Ruby then continues up the lookup chain to the `Quadrilater` class where it is found, and returns the Integer `4`. Which is then returned and output by the `p` method invocation.
-
-The second output of `4` comes from line 28 where we invoke the instance method `sides` on a new instane of the class `Sqaure`. Ruby first searches within the `Square` class for the instance method `sides` which it does not find there. Ruby then continues up the lookup chain to the the `Quadrilateral` class where it does not find there either. Ruby then continues up the lookup chain to the `Shape` class where it does find the instance method `sides`. Within the `Shape#sides` instance method definition we reference `self`, which is currently referencing the calling object, which in this instance is an instance of the `Square` class. We then call the `#class` method on this object which returns the class `Square`. We then use the scope resolution operator to reference the constant `SIDES` within the `Sqaure` class. Ruby then searches within the `Sqaure` class for the constant `SIDES`, but does not find it there. Ruby then continues up the lookup chain to the `Quadrilateral` class where it is found, and returns the Integer `4`. Which is then returned and output by the `p` method invocation.
-=end
+# Scenario 2: Fitness Tracking App
+# there are users, workouts, exercises, and a coach
+# users can log workouts, which consist of a list of exercises
+# exercises have a name, number of sets, and number of reps
+# workouts have a date, duration, and a list of exercises
+# coaches can create workout plans for users and track their progress
+# admin can manage users and coaches
+# use a module to provide a method that calculates the total number of reps across all exercises in a workout, and include it in both users and coaches
+# implement class inheritance so that user and coach inherit from a person class
+# use collabortator objects to represent relationships between users, workouts, and coaches
