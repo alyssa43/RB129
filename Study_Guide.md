@@ -108,7 +108,7 @@ p alyssa.total_students	 # => 2
 p Student.total_students # => 2
 ```
 
-In the above example, the `Student` class has a class variable called `@@total_students` that is initialized on line 2 within the `Student` class definition. With each new instance of the `Student` class, the `@@total_students` variable is incremented by `1`. We can then access this class variable within class and instance methods (as long as the class variable has been initialized). This class variable is then shared by all instances of the `Student` class. Because this is a shared variable, we must be careful not to accidentally modify it. Which is why if working with inheritance, it is recommended to not use class variables. EX:
+In the above example, the `Student` class has a class variable called `@@total_students` that is initialized on line 2 within the `Student` class definition. With each new instance of the `Student` class, the `@@total_students` class variable is incremented by `1`. We can then access this class variable within class and instance methods (as long as the class variable has been initialized). This class variable is then shared by all instances of the `Student` class. Because this is a shared variable, we must be careful not to accidentally modify it. Which is why if working with inheritance, it is recommended to not use class variables. EX:
 
 ```ruby
 class Guitar
@@ -123,6 +123,10 @@ Guitar.strings # => 6
 
 class Ukulele < Guitar
   @@strings = 4
+  
+  def self.strings
+    @@strings
+  end
 end
 
 Ukulele.strings # => 4
@@ -171,17 +175,17 @@ In the above example, we have two different constants - both named `PLANET`. Bec
 * The first `PLANET` constant variable to be initialized is on line 1 at the top level of our program, where it is assigned to reference the String `'Earth'`.
 * The second `PLANET` constant variable to be initialized is on line 16 within the `Alien` class definition, where it is assigned to reference the String `'Mars'`.
 
-When we invoke `puts alyssa`, we in turn invoke the `Person#to_s` method on our `Person` object `alyssa`, which outputs an interpolated String that references the constant `PLANET`. When Ruby tries to resolve this constant it:
+When we invoke `puts alyssa`, the `Person#to_s` method is implicitly invoked on our `Person` object `alyssa`, which outputs an interpolated String that references the constant `PLANET`. When Ruby tries to resolve this constant it:
 
 - First searches the current class, which is the `Person` class, where it is not found.
 
 - Then travels up the inheritance hierarchy, looking within the classes `Being`, `Object`, `Kernel`, and `BasicObject`, but still is not found.
 
-- Finally, it searches the top level of our program, where it find the `PLANET` constant and returns the String `Earth`.
+- Finally, it searches the top level of our program, where it finds the `PLANET` constant and returns the String `Earth`.
 
-When we invoke `puts zim,` we in turn invoke the `Alien#to_s` method on our `Alien` object `zim`, which outputs an interpolated String that references the constant `PLANET`. When Ruby tries to resolve this constant it:
+When we invoke `puts zim`, the `Alien#to_s` method is implicitly invoked on our `Alien` object `zim`, which outputs an interpolated String that references the constant `PLANET`. When Ruby tries to resolve this constant it:
 
-* First searches the `Alien` class, where it find the `PLANET` constant and returns the value it references which is the String `'Mars'`.
+* First searches the `Alien` class, where it finds the `PLANET` constant and returns the value it references which is the String `'Mars'`.
 
 Finally, on the last two lines of code we use the scope resolution operator (`::`) to try and access the constants within the `Alien` and `Person` classes:
 
@@ -218,19 +222,19 @@ end
 alyssa = Person.new('Alyssa', 34)
 
 # returns value referenced by `@name`
-p alyssa.name # => 'Alyssa'
+alyssa.name # => 'Alyssa'
 
 # returns value referenced by `@age`
-p alyssa.age # => 34
+alyssa.age # => 34
 
 alyssa.name = 'Aly' # modifies value referenced by `@name`
 alyssa.age = 35 # modifies value referenced by `@age`
 
 # returns value referenced by `@name`
-p alyssa.name # => 'Aly'
+alyssa.name # => 'Aly'
 
 # returns value referenced by `@age`
-p alyssa.age # => 35
+alyssa.age # => 35
 ```
 
 If you try to access an instance variable that does not have an accessor method, you will receive a `NoMethodError` exception for trying to access an undefined method. EX:
@@ -250,7 +254,7 @@ alyssa.name # => NoMethodError: undefined method `name` for `Person` object
 
 <h2>Instance Methods vs. Class Methods</h2>
 
-<b>Instance Methods:</b> An instance method is a method defined within a class, that provides behaviors to objects created from that class. Instances of a class can invoke instance methods defined within the class' definition, as long as the instance method is `public`. 
+<b>Instance Methods:</b> An instance method is a method defined within a class, that provides behaviors to objects created from that class. Instances of a class can invoke instance methods, as long as the instance method is `public`. 
 
 ```ruby
 class Student 
@@ -316,7 +320,7 @@ Method access control is how Ruby allows us to either grant or restrict access t
 
 * Public: public methods are methods that are available to any object of that class, to be invoked from outside of the class. Creating public methods is how we give objects behaviors. Without a public method, an object would not have any sort of functionality.
 * Private: private methods are methods that are not accessible to be invoked outside of the class. They must be invoked from another method within the same class, and they can only be invoked on the calling object. Creating private methods is how we are able to limit access to sensitive information that we may not want accessible.
-* Protected: protected methods are similar to private methods. These methods are also not accessible to be invoked outside of the class, and must be invoked from another method within the same class. They are different in that they allow us to invoke protected methods on other instances of the same class. Creating protected methods allows us to limit access to sensitive information, while still allowing interaction between objects of the same class.
+* Protected: protected methods are similar to private methods. These methods are also not accessible to be invoked outside of the class, and must be invoked from another method within the same class. They are different in that they allow us to pass in objects of the same class and invoke the other object's protected methods. Creating protected methods allows us to limit access to sensitive information, while still allowing interaction between objects of the same class.
 
 ```ruby
 class Person
@@ -1011,48 +1015,69 @@ strawberry = Fruit.new('strawberry')
 banana != strawberry # => true
 ```
 
-Ruby also gives us other built-in equality methods; `equal?`, `===`, and `eql?`. The `equal?` method from the `BasicObject` class checks the objects identity and returns `true` if the objects being compared are the same object. However, unlike the `BasicObject#==` method, `BasicObject#equal?` should not be overridden because it is used to determine object identity. The next methods are less commonly used, but are also used for comparison.
+Ruby also gives us other built-in equality methods; `equal?`, `===`, and `eql?`. The `equal?` method from the `BasicObject` class checks the objects identity and returns `true` if the objects being compared are the same object. However, unlike the `BasicObject#==` method, `BasicObject#equal?` should not be overridden because it is used to determine object identity, while the `==` method is generally used to compare if two variables values are the same (which is why is it commonly overridden). The next methods are less commonly used, but are also used for comparison.
 
-==== Not sure about below 
-
- The `===` method is when is used in a `case` statement. It returns `true` if the calling object "fits" within the group passed in as an argument. EX:
+ The `===` method is used in a `case` statement. It returns `true` if the calling object "fits" within the group passed in as an argument. EX:
 
 ```ruby
 (1..50) === 25 # => true
 String === 'hello' # => true
+String === 25 # => false
 ```
 
- And, the `eql?` method returns `true` if the two objects being compared contain the same value AND if they are of the same class.
+ And, the `eql?` method returns `true` if the two objects being compared contain the same value AND if they are of the same class. This method is most commonly used to determine equality in Hashes and is not frequently used.
+
+The main takeaway from fake operators and equality is to remember that they are in fact not operators, but methods, and can be overridden within our custom classes to perform comparison instances of our custom classes. 
 
 <h2>Collaborator Objects</h2>
 
-Collaboration is a way of modeling relationships between different objects. There are a number of different types of relationships discussed with regard to OOP. When referring to a collaborative relationship, it is one of association, which can be thought of as a "has-a" relationship. For example, a library has books, so there is an associative relationship between objects of class Library and objects of class Book. <I>A collaborative relationship is a relationship of association - NOT inheritance.</I> 
-
-Because an object's state is saved in an object's instance variables, and because instance variables can hold any object; we can set an object's instance variable to reference an object of a custom class that we've created. EX:
+A collaborator object is an object that is being held within the state (instance variable) of another object. The purpose of using collaborator objects is to enable objects to interact and collaborate with other objects in our program, which allows for more complex behaviors and relationships. 
 
 ```ruby
-class Bulldog; end
-
 class Person
-  attr_accessor :name, :pet
+  attr_reader :name
   
   def initialize(name)
     @name = name
   end
 end
 
-bob = Person.new('Robert')
-bud = Bulldog.new
-bob.pet = bud
-bob.pet # => #<Bulldog:0x000000010373ac90>
-bob.pet.class # => Bulldog
-bob.pet.speak # => "Bark!"
+my_name = 'Alyssa'
+
+me = Person.new(my_name)
+
+my_name.object_id # => 60
+me.name.object_id # => 60
 ```
 
-Here we have set `bob`'s `@pet` instance variable to `bud`, which is a `Bulldog` object. This means that when we call `bob.pet`, it is returning a `Bulldog` object. Because `bob.pet` returns a `Bulldog` object, we can chain any `Bulldog` methods at the end as well. 
+In the above example, the collaborator object is the string object `'Alyssa'`, which is stored in the local variable `my_name`. This string object is passed as an argument to the `Person.new` method invocation, which calls the `Person#initialize` constructor method. Inside this method, the `@name` instance variable is assigned to reference the string `'Alyssa'` that was passed in as the argument. Now, we have instantiated a new instance of the `Person` class that is being referenced by the local variable `me`. By invoking the `object_id` method on both `my_name` and `me.name` (which returns the value stored within the `@name` instance variable), we can see that both variables reference the same string object. In this example the collaborator object is just a simple string object that is being referenced by a local variable; however, collaborator objects can be of any type, such as other custom objects (see below). 
 
-Objects that are stored as state within another object are called "collaborator objects". We call such objects collaborators because they work in conjunction (or in collaboration) with the class they are associated with. 
+```ruby
+class Library
+  attr_reader :books 
 
-In the above example, `bob` has a collaborator object stored in the `@pet` variable.
+  def initialize(books)
+    @books = books
+  end
+end
 
-When working with collaborator objects in your class, you may be working with strings, integers, arrays, hashes, or even custom objects. Collaborator objects allow you to chop up and modularize the problem down into cohesive pieces; they are at the core of OO programming and play an important role in modeling complicated problem domains.
+class Book 
+  def initialize(title, author)
+    @title = title
+    @author = author
+  end
+end
+
+book1 = Book.new('Harry Potter', 'J.K. Rowling')
+book2 = Book.new('Lord of the Rings', 'J.R.R. Tolkien')
+book3 = Book.new('The Hobbit', 'J.R.R. Tolkien')
+
+my_library = Library.new([book1, book2, book3])
+my_library.books # => [#<Book:0x000000010224a498 @title="Harry Potter", @author="J.K. Rowling">, #<Book:0x000000010224a3d0 @title="Lord of the Rings", @author="J.R.R. Tolkien">, #<Book:0x000000010224a2b8 @title="The Hobbit", @author="J.R.R. Tolkien">]
+```
+
+In the above example, we have a total of four custom class instances: one instance of the `Library` class (`my_library`) and three instance of the `Book` class (`'book1'`, `book2`, and `book3` ). 
+
+When we instantiated the instance of the `Library` class, we passed in all three `Book` class instances through the `Library.new` method invocation, which will assign `my_library`'s instance variable `@books` to reference an array where each element is a `Book` object. This means that in this example, the collaborator objects are `book1`, `book2`, and `book3` which all reference an instance of the `Book` class.
+
+In OOP, objects encapsulate their own state and behavior. Collaborator objects allow these different objects to interact with one another, which is essential in OOP. This kind of associative relationship between objects keeps the code organized, easier to maintain, more modularized, and helps with code readability. 
